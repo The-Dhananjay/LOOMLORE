@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import {
   User,
-  UserCredential,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
@@ -23,7 +22,6 @@ export type AuthContextType = {
   emailRegister: (email: string, password: string, displayName: string) => Promise<User>;
   emailLogin: (email: string, password: string) => Promise<User>;
   sendPasswordReset: (email: string) => Promise<void>;
-  resendVerificationEmail: () => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -70,9 +68,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error.code === 'auth/network-request-failed') {
         throw new Error('Network connection error. Please check your internet connection.');
       }
-      if (error.code === 'auth/api-key-not-valid' || error.message?.includes('api-key-not-valid')) {
-        throw new Error('APIKEY_INVALID: Firebase API Key is invalid or restricted in Google Cloud Console.');
-      }
       throw new Error(error.message || 'Google sign in failed. Please try again.');
     }
   };
@@ -83,54 +78,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (displayName && credential.user) {
         await updateProfile(credential.user, { displayName });
       }
-      // Send Email Verification
-      await sendEmailVerification(credential.user);
+      try {
+        await sendEmailVerification(credential.user);
+      } catch (e) {
+        // Optional verification email
+      }
+
+      const userEmail = credential.user.email || email;
+      const userName = displayName || 'Valued Customer';
+      loginWithMobile('9876543210', userEmail);
+      useAuthStore.getState().updateProfile({ name: userName, email: userEmail });
       return credential.user;
     } catch (error: any) {
       if (error.code === 'auth/email-already-in-use') {
-        throw new Error('An account already exists with this email address. Please sign in instead.');
+        throw new Error('An account already exists with this email. Please sign in instead.');
       }
       if (error.code === 'auth/invalid-email') {
         throw new Error('Please enter a valid email address.');
       }
       if (error.code === 'auth/weak-password') {
-        throw new Error('Password is too weak. Please use at least 6 characters.');
+        throw new Error('Password must be at least 6 characters.');
       }
-      throw new Error(error.message || 'Registration failed. Please try again.');
+      throw new Error(error.message || 'Account registration failed. Please try again.');
     }
   };
 
   const emailLogin = async (email: string, password: string): Promise<User> => {
     try {
       const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
-      
-      // Email Verification Check
-      if (!credential.user.emailVerified) {
-        // Resend verification email if unverified
-        try {
-          await sendEmailVerification(credential.user);
-        } catch (e) {
-          // Ignore resend rate limits
-        }
-        throw new Error('EMAIL_UNVERIFIED: Please verify your email address before signing in. A new verification link has been sent to your inbox.');
-      }
-
       const userEmail = credential.user.email || email;
       const userName = credential.user.displayName || 'Valued Customer';
       loginWithMobile('9876543210', userEmail);
       useAuthStore.getState().updateProfile({ name: userName, email: userEmail });
       return credential.user;
     } catch (error: any) {
-      if (error.message?.includes('EMAIL_UNVERIFIED')) {
-        throw error;
-      }
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-        throw new Error('Invalid email or password. Please check your credentials and try again.');
+        throw new Error('Incorrect email or password. Please try again.');
       }
       if (error.code === 'auth/too-many-requests') {
-        throw new Error('Too many failed attempts. Please reset your password or try again later.');
+        throw new Error('Too many failed login attempts. Please reset your password or try again later.');
       }
-      throw new Error(error.message || 'Email sign-in failed. Please try again.');
+      throw new Error(error.message || 'Sign in failed. Please check your email and password.');
     }
   };
 
@@ -139,15 +127,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await sendPasswordResetEmail(auth, email.trim());
     } catch (error: any) {
       if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-email') {
-        throw new Error('Please enter a valid email address associated with your account.');
+        throw new Error('Please enter a valid registered email address.');
       }
-      throw new Error(error.message || 'Failed to send password reset email. Please try again.');
-    }
-  };
-
-  const resendVerificationEmail = async (): Promise<void> => {
-    if (auth.currentUser) {
-      await sendEmailVerification(auth.currentUser);
+      throw new Error(error.message || 'Failed to send password reset email.');
     }
   };
 
@@ -168,7 +150,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       emailRegister,
       emailLogin,
       sendPasswordReset,
-      resendVerificationEmail,
       logout
     }),
     [user, loading]

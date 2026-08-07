@@ -13,7 +13,6 @@ export default function LoginPage() {
     emailLogin,
     emailRegister,
     sendPasswordReset,
-    resendVerificationEmail,
     loading: fbLoading,
     user: fbUser
   } = useAuth();
@@ -21,15 +20,14 @@ export default function LoginPage() {
   const { isLoggedIn, registerSeller } = useAuthStore();
 
   const [portalType, setPortalType] = useState<'buyer' | 'seller'>('buyer');
-  const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot' | 'verificationSent'>('login');
+  const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot'>('login');
 
-  // Buyer Email/Password Form
+  // Buyer Form Inputs
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Seller registration form
+  // Seller Form Inputs
   const [firmName, setFirmName] = useState('');
   const [ownerName, setOwnerName] = useState('');
   const [sellerMobile, setSellerMobile] = useState('');
@@ -42,20 +40,15 @@ export default function LoginPage() {
   const [ifscCode, setIfscCode] = useState('');
   const [craftSpecialty, setCraftSpecialty] = useState('');
 
-  // Status & Feedback State
+  // Status & Feedback
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [pendingNotice, setPendingNotice] = useState<string | null>(null);
 
-  // Redirect if user is already logged in & email is verified
+  // Redirect to profile if already logged in
   useEffect(() => {
     if (!fbLoading && (fbUser || isLoggedIn)) {
-      if (fbUser && !fbUser.emailVerified && fbUser.providerData[0]?.providerId === 'password') {
-        setAuthMode('verificationSent');
-        return;
-      }
-
       const storeUser = useAuthStore.getState().user;
       if (storeUser?.role === 'seller') {
         router.replace('/seller');
@@ -65,7 +58,7 @@ export default function LoginPage() {
     }
   }, [fbUser, fbLoading, isLoggedIn, router]);
 
-  // Google Sign-In
+  // Google 1-Click Login
   async function handleGoogleSignIn() {
     setErrorMsg('');
     setSuccessMsg('');
@@ -80,8 +73,8 @@ export default function LoginPage() {
     }
   }
 
-  // Handle Email Login / Register / Forgot Submit
-  async function handleEmailAuthSubmit(e: React.FormEvent) {
+  // Handle Form Submit
+  async function handleFormSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
@@ -91,37 +84,32 @@ export default function LoginPage() {
       return;
     }
 
-    // Forgot Password Flow
+    // Forgot Password Mode
     if (authMode === 'forgot') {
       setIsSubmitting(true);
       try {
         await sendPasswordReset(email);
-        setSuccessMsg(`Password reset link sent to ${email}. Please check your email inbox.`);
+        setSuccessMsg(`Password reset link sent to ${email}. Check your email inbox.`);
       } catch (err: any) {
-        setErrorMsg(err.message || 'Could not send reset email.');
+        setErrorMsg(err.message || 'Could not send password reset email.');
       } finally {
         setIsSubmitting(false);
       }
       return;
     }
 
-    // Password validation
     if (password.length < 6) {
       setErrorMsg('Password must be at least 6 characters long.');
       return;
     }
 
-    // Register Flow
-    if (authMode === 'register') {
-      if (password !== confirmPassword) {
-        setErrorMsg('Passwords do not match. Please check and re-enter.');
-        return;
-      }
+    setIsSubmitting(true);
 
-      setIsSubmitting(true);
+    // Register Mode
+    if (authMode === 'register') {
       try {
         await emailRegister(email, password, fullName || 'Valued Customer');
-        setAuthMode('verificationSent');
+        router.push('/profile');
       } catch (err: any) {
         setErrorMsg(err.message || 'Account registration failed.');
       } finally {
@@ -130,19 +118,13 @@ export default function LoginPage() {
       return;
     }
 
-    // Sign In Flow
+    // Login Mode
     if (authMode === 'login') {
-      setIsSubmitting(true);
       try {
         await emailLogin(email, password);
         router.push('/profile');
       } catch (err: any) {
-        if (err.message?.includes('EMAIL_UNVERIFIED')) {
-          setAuthMode('verificationSent');
-          setErrorMsg('');
-        } else {
-          setErrorMsg(err.message || 'Email sign-in failed. Please check your credentials.');
-        }
+        setErrorMsg(err.message || 'Incorrect email or password.');
       } finally {
         setIsSubmitting(false);
       }
@@ -183,10 +165,9 @@ export default function LoginPage() {
     )}`;
 
     setPendingNotice(
-      `Registration Submitted for "${reg.firmName}" (ID: ${reg.id}). An official approval email request has been generated for Admin (yadav98dhananjay@gmail.com). Clicking the approval link in the email approves the firm.`
+      `Registration Submitted for "${reg.firmName}" (ID: ${reg.id}). An official approval email request has been sent to Team Admin (yadav98dhananjay@gmail.com).`
     );
 
-    // Automatically trigger mailto link
     if (typeof window !== 'undefined') {
       window.location.href = mailtoLink;
     }
@@ -197,14 +178,14 @@ export default function LoginPage() {
       <header className="text-center max-w-2xl mx-auto">
         <span className="label-eyebrow text-xs">Heritage Subcontinent Authentication</span>
         <h1 className="display-h mt-2 text-4xl text-[#33272a] sm:text-5xl">
-          Sign In or Register
+          {authMode === 'login' ? 'Sign In' : authMode === 'register' ? 'Create Account' : 'Reset Password'}
         </h1>
         <p className="mt-3 text-sm text-[#594a4e]">
-          Choose whether you are shopping for authentic Indian handlooms or registering as a weaver artisan seller.
+          Access your handloom orders, saved addresses, and profile details.
         </p>
       </header>
 
-      {/* Portal Selection Segmented Control */}
+      {/* Segmented Control */}
       <div className="mt-10 flex max-w-md mx-auto rounded-full border border-[#33272a]/20 bg-[#fffffe] p-1.5 shadow-sm">
         <button
           type="button"
@@ -220,7 +201,7 @@ export default function LoginPage() {
               : 'text-[#594a4e] hover:text-[#33272a]'
           }`}
         >
-          1. Buyer / Customer
+          Customer Portal
         </button>
         <button
           type="button"
@@ -236,261 +217,201 @@ export default function LoginPage() {
               : 'text-[#594a4e] hover:text-[#33272a]'
           }`}
         >
-          2. Artisan / Seller
+          Artisan Seller
         </button>
       </div>
 
-      {/* PORTAL FORM 1: BUYER ACCOUNT (FIREBASE EMAIL & GOOGLE AUTH) */}
+      {/* BUYER FORM */}
       {portalType === 'buyer' && (
-        <div className="mt-8 max-w-xl mx-auto rounded-3xl border border-[#33272a]/15 bg-[#fffffe] p-8 shadow-md">
-          <h2 className="display-h text-2xl text-[#33272a]">
-            {authMode === 'login' && 'Buyer Sign In'}
-            {authMode === 'register' && 'Create Buyer Account'}
-            {authMode === 'forgot' && 'Reset Password'}
-            {authMode === 'verificationSent' && 'Verify Your Email'}
-          </h2>
-          <p className="mt-1 text-xs text-[#594a4e]">
-            {authMode === 'login' && 'Sign in using your registered email & password or Google Account.'}
-            {authMode === 'register' && 'Register a new buyer account with email verification.'}
-            {authMode === 'forgot' && 'Enter your registered email to receive a password reset link.'}
-            {authMode === 'verificationSent' && 'Verification email sent! Please check your email inbox to verify your account.'}
-          </p>
+        <div className="mt-8 max-w-md mx-auto rounded-3xl border border-[#33272a]/15 bg-[#fffffe] p-8 shadow-md">
+          {/* Mode Tabs */}
+          <div className="flex border-b border-[#33272a]/15 mb-6 text-center">
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMode('login');
+                setErrorMsg('');
+                setSuccessMsg('');
+              }}
+              className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider transition border-b-2 ${
+                authMode === 'login'
+                  ? 'border-[#ff8ba7] text-[#33272a]'
+                  : 'border-transparent text-[#594a4e] hover:text-[#33272a]'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMode('register');
+                setErrorMsg('');
+                setSuccessMsg('');
+              }}
+              className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider transition border-b-2 ${
+                authMode === 'register'
+                  ? 'border-[#ff8ba7] text-[#33272a]'
+                  : 'border-transparent text-[#594a4e] hover:text-[#33272a]'
+              }`}
+            >
+              Create Account
+            </button>
+          </div>
 
-          {/* Email Verification Pending Screen */}
-          {authMode === 'verificationSent' ? (
-            <div className="mt-6 text-center space-y-4">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-100 text-2xl text-[#ff8ba7]">
-                ✉️
-              </div>
-              <div className="rounded-2xl border border-[#ff8ba7]/30 bg-[#faeee7] p-5 text-left text-xs leading-relaxed text-[#33272a]">
-                <p className="font-bold text-[#33272a] text-sm mb-1">Email Verification Required</p>
-                <p>
-                  We have sent a verification link to <strong className="font-semibold text-[#33272a]">{email || 'your email'}</strong>.
-                  Please click the link in your email inbox to activate your Loomlore buyer account.
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    setErrorMsg('');
-                    setSuccessMsg('');
-                    try {
-                      await resendVerificationEmail();
-                      setSuccessMsg('Verification link resent! Check your inbox.');
-                    } catch (e: any) {
-                      setErrorMsg(e.message || 'Rate limit exceeded. Please check your spam folder.');
-                    }
-                  }}
-                  className="wax-button w-full py-2.5 text-xs font-bold"
-                >
-                  Resend Verification Email
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthMode('login');
-                    setErrorMsg('');
-                    setSuccessMsg('');
-                  }}
-                  className="ghost-button w-full py-2 text-xs"
-                >
-                  Back to Sign In →
-                </button>
-              </div>
-            </div>
-          ) : (
+          {/* Google Sign-In */}
+          {authMode !== 'forgot' && (
             <>
-              {/* Google Sign-In Button */}
-              <div className="mt-6">
-                <button
-                  type="button"
-                  onClick={handleGoogleSignIn}
-                  disabled={isSubmitting}
-                  className="flex w-full items-center justify-center gap-3 rounded-2xl border border-[#33272a]/20 bg-[#fffffe] py-3 text-xs font-bold text-[#33272a] shadow-xs transition hover:border-[#ff8ba7] hover:bg-[#faeee7] disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label="Sign in with Google"
-                >
-                  <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
-                    <path
-                      fill="#4285F4"
-                      d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
-                    />
-                    <path
-                      fill="#34A853"
-                      d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z"
-                    />
-                    <path
-                      fill="#FBBC05"
-                      d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z"
-                    />
-                    <path
-                      fill="#EA4335"
-                      d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z"
-                    />
-                  </svg>
-                  <span>{isSubmitting ? 'Connecting to Google...' : 'Continue with Google Account'}</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={isSubmitting}
+                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-[#33272a]/20 bg-[#fffffe] py-3 text-xs font-bold text-[#33272a] shadow-xs transition hover:border-[#ff8ba7] hover:bg-[#faeee7] disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Sign in with Google"
+              >
+                <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z"
+                  />
+                </svg>
+                <span>{isSubmitting ? 'Connecting...' : 'Continue with Google'}</span>
+              </button>
 
               <div className="relative my-6 flex items-center justify-center">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-[#33272a]/15" />
                 </div>
-                <span className="relative bg-[#fffffe] px-4 text-[10px] uppercase tracking-widest text-[#594a4e] font-bold">
-                  Or Sign In with Email &amp; Password
+                <span className="relative bg-[#fffffe] px-3 text-[10px] uppercase tracking-widest text-[#594a4e] font-bold">
+                  OR
                 </span>
               </div>
-
-              {errorMsg && (
-                <p className="mb-4 rounded-xl bg-rose-50 p-3 text-center text-xs font-semibold text-rose-700">
-                  {errorMsg}
-                </p>
-              )}
-
-              {successMsg && (
-                <p className="mb-4 rounded-xl bg-emerald-50 p-3 text-center text-xs font-semibold text-emerald-800 border border-emerald-200">
-                  {successMsg}
-                </p>
-              )}
-
-              <form onSubmit={handleEmailAuthSubmit} className="space-y-4">
-                {authMode === 'register' && (
-                  <div>
-                    <label className="text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold">Full Name</label>
-                    <input
-                      type="text"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="e.g. Priya Sharma"
-                      className="mt-1 w-full rounded-xl border border-[#33272a]/20 bg-[#faeee7] px-3.5 py-2.5 text-sm text-[#33272a] outline-none focus:border-[#ff8ba7]"
-                      required
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <label className="text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold">Email Address</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="priya.sharma@example.in"
-                    className="mt-1 w-full rounded-xl border border-[#33272a]/20 bg-[#faeee7] px-3.5 py-2.5 text-sm text-[#33272a] outline-none focus:border-[#ff8ba7]"
-                    required
-                  />
-                </div>
-
-                {authMode !== 'forgot' && (
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold">Password</label>
-                      {authMode === 'login' && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAuthMode('forgot');
-                            setErrorMsg('');
-                            setSuccessMsg('');
-                          }}
-                          className="text-[10px] font-bold uppercase tracking-wider text-[#ff8ba7] hover:underline"
-                        >
-                          Forgot Password?
-                        </button>
-                      )}
-                    </div>
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="mt-1 w-full rounded-xl border border-[#33272a]/20 bg-[#faeee7] px-3.5 py-2.5 text-sm text-[#33272a] outline-none focus:border-[#ff8ba7]"
-                      required
-                    />
-                  </div>
-                )}
-
-                {authMode === 'register' && (
-                  <div>
-                    <label className="text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold">Confirm Password</label>
-                    <input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="mt-1 w-full rounded-xl border border-[#33272a]/20 bg-[#faeee7] px-3.5 py-2.5 text-sm text-[#33272a] outline-none focus:border-[#ff8ba7]"
-                      required
-                    />
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="wax-button w-full py-3 text-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#33272a] border-t-transparent" />
-                      <span>Processing...</span>
-                    </>
-                  ) : (
-                    <span>
-                      {authMode === 'login' && 'Sign In to Account →'}
-                      {authMode === 'register' && 'Register Account & Send Verification →'}
-                      {authMode === 'forgot' && 'Send Password Reset Link →'}
-                    </span>
-                  )}
-                </button>
-              </form>
-
-              {/* Mode Toggle Controls */}
-              <div className="mt-6 flex items-center justify-between border-t border-[#33272a]/15 pt-4 text-xs font-semibold text-[#594a4e]">
-                {authMode === 'login' && (
-                  <>
-                    <span>Don't have an account?</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAuthMode('register');
-                        setErrorMsg('');
-                        setSuccessMsg('');
-                      }}
-                      className="text-[#ff8ba7] hover:underline uppercase tracking-wider text-[10px] font-bold"
-                    >
-                      Create Account →
-                    </button>
-                  </>
-                )}
-
-                {(authMode === 'register' || authMode === 'forgot') && (
-                  <>
-                    <span>Already have an account?</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAuthMode('login');
-                        setErrorMsg('');
-                        setSuccessMsg('');
-                      }}
-                      className="text-[#ff8ba7] hover:underline uppercase tracking-wider text-[10px] font-bold"
-                    >
-                      Sign In Instead →
-                    </button>
-                  </>
-                )}
-              </div>
             </>
+          )}
+
+          {errorMsg && (
+            <p className="mb-4 rounded-xl bg-rose-50 p-3 text-center text-xs font-semibold text-rose-700">
+              {errorMsg}
+            </p>
+          )}
+
+          {successMsg && (
+            <p className="mb-4 rounded-xl bg-emerald-50 p-3 text-center text-xs font-semibold text-emerald-800 border border-emerald-200">
+              {successMsg}
+            </p>
+          )}
+
+          <form onSubmit={handleFormSubmit} className="space-y-4">
+            {authMode === 'register' && (
+              <div>
+                <label className="text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold">Full Name</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="e.g. Priya Sharma"
+                  className="mt-1 w-full rounded-xl border border-[#33272a]/20 bg-[#faeee7] px-3.5 py-2.5 text-sm text-[#33272a] outline-none focus:border-[#ff8ba7]"
+                  required
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold">Email Address</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@example.in"
+                className="mt-1 w-full rounded-xl border border-[#33272a]/20 bg-[#faeee7] px-3.5 py-2.5 text-sm text-[#33272a] outline-none focus:border-[#ff8ba7]"
+                required
+              />
+            </div>
+
+            {authMode !== 'forgot' && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold">Password</label>
+                  {authMode === 'login' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode('forgot');
+                        setErrorMsg('');
+                        setSuccessMsg('');
+                      }}
+                      className="text-[10px] font-bold uppercase tracking-wider text-[#ff8ba7] hover:underline"
+                    >
+                      Forgot?
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="mt-1 w-full rounded-xl border border-[#33272a]/20 bg-[#faeee7] px-3.5 py-2.5 text-sm text-[#33272a] outline-none focus:border-[#ff8ba7]"
+                  required
+                />
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="wax-button w-full py-3 text-xs flex items-center justify-center gap-2 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#33272a] border-t-transparent" />
+                  <span>Processing...</span>
+                </>
+              ) : (
+                <span>
+                  {authMode === 'login' && 'SIGN IN'}
+                  {authMode === 'register' && 'CREATE ACCOUNT'}
+                  {authMode === 'forgot' && 'SEND RESET LINK'}
+                </span>
+              )}
+            </button>
+          </form>
+
+          {authMode === 'forgot' && (
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('login');
+                  setErrorMsg('');
+                  setSuccessMsg('');
+                }}
+                className="text-xs text-[#ff8ba7] font-bold uppercase tracking-wider hover:underline"
+              >
+                ← Back to Sign In
+              </button>
+            </div>
           )}
         </div>
       )}
 
-      {/* PORTAL FORM 2: SELLER REGISTRATION & APPROVAL WORKFLOW */}
+      {/* SELLER FORM */}
       {portalType === 'seller' && (
         <div className="mt-8 max-w-2xl mx-auto rounded-3xl border border-[#33272a]/15 bg-[#fffffe] p-8 shadow-md">
           <h2 className="display-h text-3xl text-[#33272a]">Artisan &amp; Merchant Seller Registration</h2>
           <p className="mt-1 text-xs text-[#594a4e]">
-            Complete all tax and firm details. Our website audit team reviews every firm within 24–48 hours before granting listing access.
+            Complete all tax and firm details. Our website audit team reviews every firm before granting listing access.
           </p>
 
           {pendingNotice ? (
@@ -666,8 +587,8 @@ export default function LoginPage() {
               </div>
 
               <div className="sm:col-span-2">
-                <button type="submit" className="wax-button w-full py-3.5 text-xs">
-                  Submit Seller Credentials for Website Team Review →
+                <button type="submit" className="wax-button w-full py-3.5 text-xs font-bold">
+                  Submit Seller Credentials for Team Review →
                 </button>
               </div>
             </form>
