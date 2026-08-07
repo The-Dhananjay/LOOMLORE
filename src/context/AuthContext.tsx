@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         recaptchaVerifier.clear();
       } catch (err) {
-        // Ignore clear errors
+        // Ignore cleanup errors
       }
       setRecaptchaVerifier(null);
     }
@@ -117,14 +117,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         document.body.appendChild(element);
       }
 
+      // Standard Firebase Web Phone Authentication RecaptchaVerifier
       const verifier = new RecaptchaVerifier(auth, containerId, {
-        size: 'invisible',
-        callback: () => {
-          // reCAPTCHA solved
-        },
-        'expired-callback': () => {
-          clearRecaptcha();
-        }
+        size: 'invisible'
       });
 
       setRecaptchaVerifier(verifier);
