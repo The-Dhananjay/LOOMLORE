@@ -58,39 +58,7 @@ export default function ProfilePage() {
     );
   }
 
-  const accountOrders = user.orders && user.orders.length > 0
-    ? user.orders
-    : sellerOrders
-        .filter((o) => o.customerMobile.replace(/\D/g, '') === user.mobile.replace(/\D/g, ''))
-        .map((sOrder) => ({
-          id: sOrder.orderId,
-          trackingId: `LL-TRACK-${Math.floor(1000 + Math.random() * 9000)}`,
-          courierPartner: 'BlueDart Express (Handloom Priority)',
-          date: sOrder.orderedAt,
-          totalINR: sOrder.totalAmountINR,
-          paymentMethod: sOrder.paymentMethod,
-          status: sOrder.status === 'Dispatched' ? 'In Transit' : sOrder.status as any,
-          estimatedDelivery: '3–5 Business Days',
-          shippingAddress: {
-            id: 'addr-01',
-            name: sOrder.customerName,
-            mobile: sOrder.customerMobile,
-            pincode: '110001',
-            addressLine: sOrder.shippingAddress,
-            city: 'New Delhi',
-            state: 'Delhi',
-            isDefault: true
-          },
-          items: sOrder.items.map((it) => ({
-            id: it.productId,
-            productId: it.productId,
-            productName: it.productName,
-            image: it.image,
-            priceINR: it.priceINR,
-            quantity: it.quantity,
-            size: 'Free Size'
-          }))
-        }));
+  const accountOrders = user.orders || [];
 
   return (
     <div className="mx-auto w-full max-w-7xl px-6 py-32 font-sans bg-[#faeee7] text-[#33272a]">
