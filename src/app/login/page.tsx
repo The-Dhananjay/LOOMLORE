@@ -183,7 +183,7 @@ export default function LoginPage() {
     )}`;
 
     setPendingNotice(
-      `Registration Submitted for "${reg.firmName}". An official approval email request has been generated for Admin (yadav98dhananjay@gmail.com). Clicking the approval link in the email approves the firm.`
+      `Registration Submitted for "${reg.firmName}" (ID: ${reg.id}). An official approval email request has been generated for Admin (yadav98dhananjay@gmail.com). Clicking the approval link in the email approves the firm.`
     );
 
     // Automatically trigger mailto link
@@ -494,19 +494,31 @@ export default function LoginPage() {
           </p>
 
           {pendingNotice ? (
-            <div className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 p-6 text-center text-xs text-amber-900">
-              <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-amber-200 text-xl font-bold text-amber-900 mb-3">
-                ⏳
+            <div className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 p-6 text-center text-xs text-amber-900 space-y-3">
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-amber-200 text-xl font-bold text-amber-900 mb-2">
+                ✉️
               </div>
-              <h3 className="display-h text-2xl text-amber-900">Firm Verification Pending</h3>
-              <p className="mt-2 leading-relaxed">{pendingNotice}</p>
+              <h3 className="display-h text-2xl text-amber-900">Seller Approval Request Dispatched to Team Email</h3>
+              <p className="leading-relaxed">{pendingNotice}</p>
 
-              <div className="mt-6 flex flex-wrap justify-center gap-3">
-                <Link href="/admin" className="wax-button text-xs px-6 py-2.5">
-                  Open Website Team Admin Panel (To Approve) →
-                </Link>
-                <Link href="/seller" className="ghost-button text-xs px-6 py-2.5">
-                  Check Seller Status →
+              <div className="rounded-xl border border-amber-200 bg-white p-4 text-left text-xs font-mono text-slate-800 space-y-1">
+                <p className="font-bold text-amber-900 font-sans">Official Team Email Recipient:</p>
+                <p>yadav98dhananjay@gmail.com</p>
+                <p className="pt-2 font-bold text-amber-900 font-sans">Direct Team Approval URL:</p>
+                <p className="break-all text-rose-700">{typeof window !== 'undefined' ? `${window.location.origin}/seller/approve?id=${pendingNotice.match(/sel-req-\d+/)?.[0] || ''}` : '/seller/approve'}</p>
+              </div>
+
+              <div className="mt-4 flex flex-wrap justify-center gap-3 pt-2">
+                {pendingNotice.match(/sel-req-\d+/)?.[0] && (
+                  <Link
+                    href={`/seller/approve?id=${pendingNotice.match(/sel-req-\d+/)?.[0]}`}
+                    className="wax-button text-xs px-6 py-2.5"
+                  >
+                    Open Team Email Approval Link →
+                  </Link>
+                )}
+                <Link href="/admin" className="ghost-button text-xs px-6 py-2.5">
+                  Open Admin Panel →
                 </Link>
               </div>
             </div>
