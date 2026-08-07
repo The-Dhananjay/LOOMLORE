@@ -8,8 +8,8 @@ import { formatINR } from '@/lib/india';
 import type { Culture, Fabric, GarmentType, Gender, Occasion } from '@/data/catalog';
 
 export default function SellerPortalPage() {
-  const { sellerProducts, sellerOrders, addProduct, removeProduct, updateOrderStatus } = useSellerStore();
-  const { user, isLoggedIn } = useAuthStore();
+  const { sellerProducts, sellerOrders, addProduct, removeProduct, updateOrderStatus, updateProductStock } = useSellerStore();
+  const { user, isLoggedIn, logout } = useAuthStore();
 
   const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'add'>('products');
 
@@ -24,6 +24,8 @@ export default function SellerPortalPage() {
   const [occasion, setOccasion] = useState<Occasion>('Wedding');
   const [originalPriceINR, setOriginalPriceINR] = useState(12999);
   const [offerPriceINR, setOfferPriceINR] = useState(8999);
+  const [stockQtyInput, setStockQtyInput] = useState(15);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>(['Free Size', 'S', 'M', 'L', 'XL']);
   const [badgeTag, setBadgeTag] = useState('Festive 30% Off');
   const [artisan, setArtisan] = useState('Jaipur Royal Weavers Guild');
   const [story, setStory] = useState('Hand-loomed traditional clothing with authentic zari borders and vegetable dyes.');
@@ -128,8 +130,10 @@ export default function SellerPortalPage() {
       occasion,
       fabric,
       colors: ['Heritage Custom'],
-      sizes: ['Free Size', 'S', 'M', 'L', 'XL'],
+      sizes: selectedSizes.length > 0 ? selectedSizes : ['Free Size'],
       priceINR: Number(offerPriceINR),
+      stockQty: Number(stockQtyInput),
+      inStock: Number(stockQtyInput) > 0,
       gstPct: 5,
       hsnCode: '5007',
       story,
@@ -137,7 +141,7 @@ export default function SellerPortalPage() {
         '100% Authentic Handwoven',
         `Original Price: ${formatINR(originalPriceINR)}`,
         `Special Offer: ${formatINR(offerPriceINR)}`,
-        'Includes blouse/pajama fabric'
+        `Stock: ${stockQtyInput} units`
       ],
       artisan: artisan || user?.name || 'Master Artisan Guild',
       swatch: '#ff8ba7',
@@ -146,7 +150,7 @@ export default function SellerPortalPage() {
       badge: badgeTag || 'Special Offer'
     });
 
-    setMessage(`Success! Garment "${created.name}" is now live at ${formatINR(offerPriceINR)}!`);
+    setMessage(`Success! Garment "${created.name}" is now live with ${stockQtyInput} units in stock!`);
     setName('');
     setActiveTab('products');
     setTimeout(() => setMessage(''), 4000);
@@ -174,14 +178,17 @@ export default function SellerPortalPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Link href="/profile" className="ghost-button text-xs px-5 py-2.5">
-            Customer View
-          </Link>
           <button
             onClick={() => setActiveTab('add')}
             className="wax-button text-xs px-6 py-2.5"
           >
             + Upload New Garment
+          </button>
+          <button
+            onClick={logout}
+            className="rounded-full border border-rose-300 bg-rose-50 px-5 py-2.5 text-xs font-bold text-rose-700 hover:bg-rose-100 transition shadow-xs"
+          >
+            Sign Out 🚪
           </button>
         </div>
       </header>
@@ -191,7 +198,7 @@ export default function SellerPortalPage() {
         <div className="royal-card p-6">
           <p className="text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold">Listed Products</p>
           <p className="display-h mt-1 text-3xl text-[#33272a]">{sellerProducts.length} Garments</p>
-          <p className="mt-1 text-xs text-[#594a4e]">Live across 28 states catalog</p>
+          <p className="mt-1 text-xs text-[#594a4e]">Live in seller collection</p>
         </div>
         <div className="royal-card p-6">
           <p className="text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold">Incoming Buyer Orders</p>
@@ -235,47 +242,86 @@ export default function SellerPortalPage() {
             activeTab === 'add' ? 'bg-[#ff8ba7] text-[#33272a]' : 'border border-[#33272a]/20 bg-[#fffffe] text-[#33272a]'
           }`}
         >
-          + Upload Garment &amp; Make Offers
+          + Upload Garment &amp; Set Stock
         </button>
       </div>
 
-      {/* TAB 1: LISTED PRODUCTS & OFFERS */}
+      {/* TAB 1: LISTED PRODUCTS & STOCK MANAGEMENT */}
       {activeTab === 'products' && (
         <div className="mt-8">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {sellerProducts.map((p) => (
-              <div key={p.id} className="royal-card p-5 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <img src={p.image} alt={p.name} className="h-20 w-16 rounded-xl object-cover border border-[#33272a]/15 bg-[#faeee7]" />
-                    <span className="rounded-full bg-[#ff8ba7] px-3 py-1 text-[9px] uppercase tracking-wider text-[#33272a] font-bold">
-                      {p.gender} · {p.garment}
-                    </span>
-                  </div>
+            {sellerProducts.map((p) => {
+              const currentStock = p.stockQty !== undefined ? p.stockQty : 15;
+              const isOut = currentStock === 0;
 
-                  <h3 className="display-h mt-3 text-xl text-[#33272a] line-clamp-1">{p.name}</h3>
-                  <p className="text-xs text-[#594a4e]">{p.state} · {p.fabric}</p>
-                  <p className="mt-2 text-xs text-[#594a4e]/80 line-clamp-2">{p.story}</p>
-                </div>
-
-                <div className="mt-5 flex items-center justify-between border-t border-[#33272a]/10 pt-3">
+              return (
+                <div key={p.id} className="royal-card p-5 flex flex-col justify-between">
                   <div>
-                    <span className="display-h text-xl text-[#33272a] font-bold">{formatINR(p.priceINR)}</span>
-                    {p.badge && (
-                      <span className="ml-2 rounded-full bg-[#faeee7] px-2 py-0.5 text-[9px] font-bold text-[#ff8ba7]">
-                        {p.badge}
-                      </span>
-                    )}
+                    <div className="flex items-center justify-between">
+                      <img src={p.image} alt={p.name} className="h-20 w-16 rounded-xl object-cover border border-[#33272a]/15 bg-[#faeee7]" />
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="rounded-full bg-[#ff8ba7] px-3 py-1 text-[9px] uppercase tracking-wider text-[#33272a] font-bold">
+                          {p.gender} · {p.garment}
+                        </span>
+                        <span className={`rounded-full border px-2.5 py-0.5 text-[8px] uppercase tracking-wider font-bold ${
+                          isOut
+                            ? 'bg-rose-100 border-rose-300 text-rose-800'
+                            : 'bg-emerald-100 border-emerald-300 text-emerald-800'
+                        }`}>
+                          {isOut ? 'OUT OF STOCK' : `In Stock (${currentStock} units)`}
+                        </span>
+                      </div>
+                    </div>
+
+                    <h3 className="display-h mt-3 text-xl text-[#33272a] line-clamp-1">{p.name}</h3>
+                    <p className="text-xs text-[#594a4e]">{p.state} · {p.fabric}</p>
+
+                    {/* Stock Quantity Controls */}
+                    <div className="mt-4 rounded-2xl bg-[#faeee7] p-3 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-[#33272a] uppercase tracking-wider text-[10px]">Inventory Stock:</span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => updateProductStock(p.id, Math.max(0, currentStock - 1))}
+                            className="h-6 w-6 rounded-lg bg-[#fffffe] border border-[#33272a]/20 font-bold text-[#33272a] hover:bg-[#ff8ba7]"
+                          >
+                            -
+                          </button>
+                          <span className="w-8 text-center font-mono font-bold text-sm text-[#33272a]">{currentStock}</span>
+                          <button
+                            onClick={() => updateProductStock(p.id, currentStock + 1)}
+                            className="h-6 w-6 rounded-lg bg-[#fffffe] border border-[#33272a]/20 font-bold text-[#33272a] hover:bg-[#ff8ba7]"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between text-[10px] text-[#594a4e]">
+                        <span>Available Sizes:</span>
+                        <span className="font-semibold text-[#33272a]">{p.sizes ? p.sizes.join(', ') : 'Free Size'}</span>
+                      </div>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => removeProduct(p.id)}
-                    className="rounded-full border border-rose-300 bg-rose-50 px-3 py-1 text-[10px] uppercase tracking-wider text-rose-700 font-bold hover:bg-rose-100"
-                  >
-                    Delete
-                  </button>
+
+                  <div className="mt-5 flex items-center justify-between border-t border-[#33272a]/10 pt-3">
+                    <div>
+                      <span className="display-h text-xl text-[#33272a] font-bold">{formatINR(p.priceINR)}</span>
+                      {p.badge && (
+                        <span className="ml-2 rounded-full bg-[#faeee7] px-2 py-0.5 text-[9px] font-bold text-[#ff8ba7]">
+                          {p.badge}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => removeProduct(p.id)}
+                      className="rounded-full border border-rose-300 bg-rose-50 px-3 py-1 text-[10px] uppercase tracking-wider text-rose-700 font-bold hover:bg-rose-100"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -478,6 +524,48 @@ export default function SellerPortalPage() {
                 className="mt-1 w-full rounded-xl border border-[#33272a]/20 bg-[#faeee7] px-3.5 py-2 text-xs text-[#33272a] font-bold outline-none"
                 required
               />
+            </div>
+
+            <div>
+              <label className="text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold">Initial Stock Quantity (Units)</label>
+              <input
+                type="number"
+                min="0"
+                value={stockQtyInput}
+                onChange={(e) => setStockQtyInput(Number(e.target.value))}
+                placeholder="15"
+                className="mt-1 w-full rounded-xl border border-[#33272a]/20 bg-[#faeee7] px-3.5 py-2 text-xs text-[#33272a] font-bold outline-none"
+                required
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold">Available Sizes</label>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {['Free Size', 'S', 'M', 'L', 'XL', 'XXL', '38', '40', '42', '44'].map((size) => {
+                  const active = selectedSizes.includes(size);
+                  return (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => {
+                        if (active) {
+                          setSelectedSizes(selectedSizes.filter((s) => s !== size));
+                        } else {
+                          setSelectedSizes([...selectedSizes, size]);
+                        }
+                      }}
+                      className={`rounded-xl border px-3 py-1 text-xs font-bold transition ${
+                        active
+                          ? 'border-[#ff8ba7] bg-[#ff8ba7] text-[#33272a]'
+                          : 'border-[#33272a]/20 bg-[#faeee7] text-[#594a4e]'
+                      }`}
+                    >
+                      {size} {active ? '✓' : ''}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="sm:col-span-2">

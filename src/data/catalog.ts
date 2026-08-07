@@ -87,6 +87,8 @@ export type Product = {
   lengthCm?: number;
   priceINR: number;
   originalPriceINR?: number;
+  stockQty?: number;
+  inStock?: boolean;
   gstPct: number;
   hsnCode: string;
   story: string;

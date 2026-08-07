@@ -41,6 +41,7 @@ export type UserProfile = {
   sellerStatus?: SellerStatus;
   sellerDetails?: SellerRegistration;
   addresses: UserAddress[];
+  purchasedProductIds?: string[];
 };
 
 type AuthState = {
@@ -66,6 +67,7 @@ type AuthState = {
   logout: () => void;
   updateProfile: (data: Partial<UserProfile>) => void;
   addAddress: (address: Omit<UserAddress, 'id'>) => void;
+  recordPurchasedProducts: (productIds: string[]) => void;
 };
 
 export const DEMO_CUSTOMER_MOBILE = '9876543210';
@@ -93,7 +95,8 @@ export const useAuthStore = create<AuthState>()(
             state: 'Delhi',
             isDefault: true
           }
-        ]
+        ],
+        purchasedProductIds: ['raj-w-01']
       },
       isLoggedIn: true,
       isLoginModalOpen: false,
@@ -320,6 +323,20 @@ export const useAuthStore = create<AuthState>()(
             user: {
               ...state.user,
               addresses: [...state.user.addresses, { ...newAddr, id }]
+            }
+          };
+        });
+      },
+
+      recordPurchasedProducts: (productIds) => {
+        set((state) => {
+          if (!state.user) return state;
+          const current = state.user.purchasedProductIds || [];
+          const updated = Array.from(new Set([...current, ...productIds]));
+          return {
+            user: {
+              ...state.user,
+              purchasedProductIds: updated
             }
           };
         });

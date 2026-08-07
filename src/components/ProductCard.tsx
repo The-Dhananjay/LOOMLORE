@@ -67,6 +67,11 @@ export function ProductCard({ product }: { product: Product }) {
                 {product.badge}
               </span>
             )}
+            {product.stockQty === 0 && (
+              <span className="rounded-full border border-rose-400 bg-rose-600 px-3 py-0.5 text-[9px] uppercase tracking-wider text-white font-bold shadow-xs">
+                OUT OF STOCK
+              </span>
+            )}
           </div>
 
           {/* Wishlist Heart Button */}
@@ -95,10 +100,15 @@ export function ProductCard({ product }: { product: Product }) {
               Quick View
             </button>
             <button
-              onClick={handleAddToCart}
-              className="rounded-full bg-[#ff8ba7] px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-[#33272a] font-bold shadow-md hover:bg-[#ffc6c7] transition"
+              onClick={product.stockQty === 0 ? (e) => e.preventDefault() : handleAddToCart}
+              disabled={product.stockQty === 0}
+              className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] font-bold shadow-md transition ${
+                product.stockQty === 0
+                  ? 'bg-zinc-300 text-zinc-600 cursor-not-allowed'
+                  : 'bg-[#ff8ba7] text-[#33272a] hover:bg-[#ffc6c7]'
+              }`}
             >
-              {added ? 'Added ✓' : '+ Bag'}
+              {product.stockQty === 0 ? 'Out of Stock' : added ? 'Added ✓' : '+ Bag'}
             </button>
           </div>
         </div>

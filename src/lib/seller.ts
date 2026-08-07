@@ -27,6 +27,8 @@ type SellerState = {
   addProduct: (product: Omit<Product, 'id' | 'slug' | 'rating' | 'reviewCount'>) => Product;
   removeProduct: (productId: string) => void;
   updateProduct: (productId: string, data: Partial<Product>) => void;
+  updateProductStock: (productId: string, stockQty: number) => void;
+  deductStockForOrder: (items: { productId: string; quantity: number }[]) => void;
   addOrderNotification: (order: SellerOrder) => void;
   updateOrderStatus: (orderId: string, status: SellerOrder['status']) => void;
 };
@@ -90,6 +92,32 @@ export const useSellerStore = create<SellerState>()(
           sellerProducts: state.sellerProducts.map((p) =>
             p.id === productId ? { ...p, ...data } : p
           )
+        }));
+      },
+
+      updateProductStock: (productId, stockQty) => {
+        set((state) => ({
+          sellerProducts: state.sellerProducts.map((p) =>
+            p.id === productId
+              ? { ...p, stockQty, inStock: stockQty > 0 }
+              : p
+          )
+        }));
+      },
+
+      deductStockForOrder: (items) => {
+        set((state) => ({
+          sellerProducts: state.sellerProducts.map((p) => {
+            const match = items.find((i) => i.productId === p.id);
+            if (!match) return p;
+            const currentQty = p.stockQty !== undefined ? p.stockQty : 15;
+            const newQty = Math.max(0, currentQty - match.quantity);
+            return {
+              ...p,
+              stockQty: newQty,
+              inStock: newQty > 0
+            };
+          })
         }));
       },
 

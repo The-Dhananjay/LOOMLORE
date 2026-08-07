@@ -54,10 +54,13 @@ export function LuxuryNav() {
     };
   }, []);
 
-  // Filter out Artisan Portal when logged in as Buyer (Customer)
+  // Filter navigation links based on user role
   const navSections = ALL_SECTIONS.filter((s) => {
     if (mounted && isLoggedIn && user?.role === 'customer' && s.href === '/seller') {
       return false;
+    }
+    if (mounted && isLoggedIn && user?.role === 'seller') {
+      return s.href === '/seller';
     }
     return true;
   });

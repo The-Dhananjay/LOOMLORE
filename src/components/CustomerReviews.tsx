@@ -101,85 +101,100 @@ export function CustomerReviews({ productId, productName, initialRating, initial
           <h3 className="display-h text-2xl text-[#33272a]">Write a Review for {productName}</h3>
           <p className="mt-1 text-xs text-[#594a4e]">Share your experience with this handwoven heirloom.</p>
 
-          {submitted && (
-            <div className="mt-4 rounded-2xl bg-emerald-50 border border-emerald-300 p-4 text-xs font-semibold text-emerald-800 text-center">
-              Thank you! Your review and rating have been added.
+          {!user?.purchasedProductIds?.includes(productId) ? (
+            <div className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 p-6 text-center text-amber-900">
+              <div className="text-2xl mb-1">🔒</div>
+              <h4 className="font-bold text-sm">Verified Purchaser Review Only</h4>
+              <p className="mt-1.5 text-xs text-amber-800 leading-relaxed">
+                To maintain authentic handloom ratings, only buyers who have purchased this garment can submit a customer review.
+              </p>
+              <p className="mt-3 text-[11px] font-semibold text-[#33272a]">
+                Purchase this product to unlock verified review posting!
+              </p>
             </div>
+          ) : (
+            <>
+              {submitted && (
+                <div className="mt-4 rounded-2xl bg-emerald-50 border border-emerald-300 p-4 text-xs font-semibold text-emerald-800 text-center">
+                  Thank you! Your review and rating have been added.
+                </div>
+              )}
+
+              {error && (
+                <div className="mt-4 rounded-2xl bg-rose-50 border border-rose-300 p-3 text-xs font-semibold text-rose-800 text-center">
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmitReview} className="mt-6 space-y-4">
+                {/* Interactive Star Rating Selector */}
+                <div>
+                  <label className="block text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold mb-1.5">
+                    Your Rating (Click Stars)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setRating(star)}
+                        className="text-2xl transition hover:scale-110 focus:outline-none"
+                      >
+                        <span className={star <= rating ? 'text-amber-500' : 'text-zinc-300'}>★</span>
+                      </button>
+                    ))}
+                    <span className="ml-2 text-xs font-bold text-[#33272a]">{rating} / 5 Stars</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold mb-1">
+                    Your Name
+                  </label>
+                  <input
+                    type="text"
+                    value={reviewerName}
+                    onChange={(e) => setReviewerName(e.target.value)}
+                    placeholder="e.g. Sunita Sharma"
+                    className="w-full rounded-xl border border-[#33272a]/20 bg-[#faeee7] px-3.5 py-2.5 text-xs text-[#33272a] outline-none focus:border-[#ff8ba7]"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold mb-1">
+                    Review Title / Headline
+                  </label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g. Stunning silk texture & authentic weave!"
+                    className="w-full rounded-xl border border-[#33272a]/20 bg-[#faeee7] px-3.5 py-2.5 text-xs text-[#33272a] outline-none focus:border-[#ff8ba7]"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold mb-1">
+                    Your Written Review Comment
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="Describe the fabric quality, stitching, weaving detail, and delivery experience..."
+                    className="w-full rounded-xl border border-[#33272a]/20 bg-[#faeee7] px-3.5 py-2.5 text-xs text-[#33272a] outline-none focus:border-[#ff8ba7]"
+                    required
+                  />
+                </div>
+
+                <button type="submit" className="wax-button w-full py-3 text-xs">
+                  Submit Rating &amp; Review →
+                </button>
+              </form>
+            </>
           )}
-
-          {error && (
-            <div className="mt-4 rounded-2xl bg-rose-50 border border-rose-300 p-3 text-xs font-semibold text-rose-800 text-center">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmitReview} className="mt-6 space-y-4">
-            {/* Interactive Star Rating Selector */}
-            <div>
-              <label className="block text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold mb-1.5">
-                Your Rating (Click Stars)
-              </label>
-              <div className="flex items-center gap-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => setRating(star)}
-                    className="text-2xl transition hover:scale-110 focus:outline-none"
-                  >
-                    <span className={star <= rating ? 'text-amber-500' : 'text-zinc-300'}>★</span>
-                  </button>
-                ))}
-                <span className="ml-2 text-xs font-bold text-[#33272a]">{rating} / 5 Stars</span>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold mb-1">
-                Your Name
-              </label>
-              <input
-                type="text"
-                value={reviewerName}
-                onChange={(e) => setReviewerName(e.target.value)}
-                placeholder="e.g. Sunita Sharma"
-                className="w-full rounded-xl border border-[#33272a]/20 bg-[#faeee7] px-3.5 py-2.5 text-xs text-[#33272a] outline-none focus:border-[#ff8ba7]"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold mb-1">
-                Review Title / Headline
-              </label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Stunning silk texture & authentic weave!"
-                className="w-full rounded-xl border border-[#33272a]/20 bg-[#faeee7] px-3.5 py-2.5 text-xs text-[#33272a] outline-none focus:border-[#ff8ba7]"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold mb-1">
-                Your Written Review Comment
-              </label>
-              <textarea
-                rows={3}
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Describe the fabric quality, stitching, weaving detail, and delivery experience..."
-                className="w-full rounded-xl border border-[#33272a]/20 bg-[#faeee7] px-3.5 py-2.5 text-xs text-[#33272a] outline-none focus:border-[#ff8ba7]"
-                required
-              />
-            </div>
-
-            <button type="submit" className="wax-button w-full py-3 text-xs">
-              Submit Rating &amp; Review →
-            </button>
-          </form>
         </div>
 
         {/* RIGHT COLUMN: Customer Reviews List */}
