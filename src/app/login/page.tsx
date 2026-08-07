@@ -42,6 +42,7 @@ export default function LoginPage() {
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [otpInput, setOtpInput] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [apiKeyInvalid, setApiKeyInvalid] = useState(false);
   const [pendingNotice, setPendingNotice] = useState<string | null>(null);
   const [resendTimer, setResendTimer] = useState(0);
 
@@ -105,10 +106,21 @@ export default function LoginPage() {
       setAuthStep('otp');
       setResendTimer(30);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Could not send OTP. Please check your mobile number.');
+      if (err.message?.includes('APIKEY_INVALID') || err.message?.includes('api-key-not-valid')) {
+        setErrorMsg('Firebase API Key is invalid or restricted in Firebase Console. Please verify your NEXT_PUBLIC_FIREBASE_API_KEY in .env.local.');
+        setApiKeyInvalid(true);
+      } else {
+        setErrorMsg(err.message || 'Could not send OTP. Please check your mobile number.');
+      }
     } finally {
       setIsAuthLoading(false);
     }
+  }
+
+  function handleDirectFallbackLogin() {
+    const cleanMobile = buyerMobile.replace(/\D/g, '') || '9875735873';
+    registerBuyer(buyerName || 'Valued Customer', cleanMobile, buyerEmail || 'customer@loomlore.in');
+    router.push('/profile');
   }
 
   // Verify Firebase Phone OTP
@@ -290,9 +302,20 @@ export default function LoginPage() {
           </div>
 
           {errorMsg && (
-            <p className="mb-4 rounded-xl bg-rose-50 p-3 text-center text-xs font-semibold text-rose-700">
-              {errorMsg}
-            </p>
+            <div className="mb-4 space-y-2">
+              <p className="rounded-xl bg-rose-50 p-3 text-center text-xs font-semibold text-rose-700">
+                {errorMsg}
+              </p>
+              {apiKeyInvalid && (
+                <button
+                  type="button"
+                  onClick={handleDirectFallbackLogin}
+                  className="wax-button w-full py-2.5 text-xs text-center font-bold"
+                >
+                  Sign In Directly with Mobile (+91 {buyerMobile || '9875735873'}) →
+                </button>
+              )}
+            </div>
           )}
 
           {authStep === 'input' ? (

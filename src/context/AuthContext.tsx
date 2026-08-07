@@ -90,6 +90,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error.code === 'auth/network-request-failed') {
         throw new Error('Network connection error. Please check your internet connection.');
       }
+      if (error.code === 'auth/api-key-not-valid' || error.message?.includes('api-key-not-valid')) {
+        throw new Error('APIKEY_INVALID: Firebase API Key is invalid or restricted in Google Cloud Console.');
+      }
       throw new Error(error.message || 'Google sign in failed. Please try again.');
     }
   };
@@ -129,6 +132,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return confirmationResult;
     } catch (error: any) {
       clearRecaptcha();
+      if (error.code === 'auth/api-key-not-valid' || error.message?.includes('api-key-not-valid')) {
+        throw new Error('APIKEY_INVALID: Firebase API Key is invalid or restricted in Google Cloud Console.');
+      }
       if (error.code === 'auth/invalid-phone-number') {
         throw new Error('Invalid mobile number format. Please enter a valid 10-digit number.');
       }
@@ -136,7 +142,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Too many verification attempts. Please wait a moment and try again.');
       }
       if (error.code === 'auth/quota-exceeded') {
-        throw new Error('SMS quota exceeded. Please use demo test number +919876543210 with OTP 123456.');
+        throw new Error('SMS quota exceeded. Please try again later.');
       }
       throw new Error(error.message || 'Failed to send OTP SMS. Please check your number.');
     }
