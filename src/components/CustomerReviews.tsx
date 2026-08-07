@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useReviewStore } from '@/lib/reviews';
 import { useAuthStore } from '@/lib/auth';
 
@@ -12,19 +12,32 @@ type Props = {
 };
 
 export function CustomerReviews({ productId, productName, initialRating, initialReviewCount }: Props) {
+  const [mounted, setMounted] = useState(false);
   const { reviews, addReview, getReviewsForProduct, getProductRatingStats } = useReviewStore();
-  const { user, isLoggedIn, openLoginModal } = useAuthStore();
+  const { user } = useAuthStore();
 
-  const productReviews = getReviewsForProduct(productId);
-  const stats = getProductRatingStats(productId, initialRating, initialReviewCount);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const productReviews = mounted ? getReviewsForProduct(productId) : [];
+  const stats = mounted
+    ? getProductRatingStats(productId, initialRating, initialReviewCount)
+    : { avgRating: initialRating, totalCount: initialReviewCount };
 
   // Form state
   const [rating, setRating] = useState<number>(5);
-  const [reviewerName, setReviewerName] = useState(user?.name ?? '');
+  const [reviewerName, setReviewerName] = useState('');
   const [title, setTitle] = useState('');
   const [comment, setComment] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (mounted && user?.name) {
+      setReviewerName(user.name);
+    }
+  }, [mounted, user]);
 
   function handleSubmitReview(e: React.FormEvent) {
     e.preventDefault();
