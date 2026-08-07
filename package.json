@@ -10,6 +10,7 @@
   "dependencies": {
     "@react-three/drei": "9.114.0",
     "@react-three/fiber": "8.17.10",
+    "firebase": "^12.17.1",
     "framer-motion": "11.5.4",
     "gsap": "3.12.5",
     "lenis": "1.1.13",

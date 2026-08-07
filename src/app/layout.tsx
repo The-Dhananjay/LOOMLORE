@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true }
 };
 
+import { AuthProvider } from '@/context/AuthContext';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="text-[#33272a] bg-[#faeee7]" suppressHydrationWarning>
@@ -41,9 +44,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to content
         </a>
-        <StateTheme />
-        <LuxuryNav />
-        <main id="main">{children}</main>
+        <AuthProvider>
+          <ProtectedRoute>
+            <StateTheme />
+            <LuxuryNav />
+            <main id="main">{children}</main>
+          </ProtectedRoute>
+        </AuthProvider>
       </body>
     </html>
   );

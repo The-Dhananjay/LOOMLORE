@@ -1,18 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import type { ConfirmationResult } from 'firebase/auth';
+import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore, DEMO_CUSTOMER_MOBILE, DEMO_SELLER_MOBILE, DEMO_ADMIN_MOBILE, DEMO_OTP } from '@/lib/auth';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { googleLogin, sendPhoneOTP, verifyOTP, loading: fbLoading, user: fbUser } = useAuth();
   const {
-    user,
     isLoggedIn,
     registerBuyer,
     registerSeller,
-    verifyOTP,
     loginAsDemoCustomer,
     loginAsDemoSeller,
     loginAsDemoAdmin
@@ -20,12 +21,12 @@ export default function LoginPage() {
 
   const [portalType, setPortalType] = useState<'buyer' | 'seller'>('buyer');
   const [authStep, setAuthStep] = useState<'input' | 'otp'>('input');
-  
+
   // Buyer form
   const [buyerName, setBuyerName] = useState('');
   const [buyerMobile, setBuyerMobile] = useState('');
   const [buyerEmail, setBuyerEmail] = useState('');
-  
+
   // Seller registration form
   const [firmName, setFirmName] = useState('');
   const [ownerName, setOwnerName] = useState('');
@@ -39,41 +40,151 @@ export default function LoginPage() {
   const [ifscCode, setIfscCode] = useState('');
   const [craftSpecialty, setCraftSpecialty] = useState('');
 
-  // OTP State
+  // Firebase Auth State
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [otpInput, setOtpInput] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [pendingNotice, setPendingNotice] = useState<string | null>(null);
+  const [resendTimer, setResendTimer] = useState(0);
 
-  function handleBuyerSubmit(e: React.FormEvent) {
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (!fbLoading && (fbUser || isLoggedIn)) {
+      const storeUser = useAuthStore.getState().user;
+      if (storeUser?.role === 'seller') {
+        router.replace('/seller');
+      } else {
+        router.replace('/profile');
+      }
+    }
+  }, [fbUser, fbLoading, isLoggedIn, router]);
+
+  // Resend OTP Countdown Timer
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
+
+  // Handle Google Sign-In
+  async function handleGoogleSignIn() {
+    setErrorMsg('');
+    setIsAuthLoading(true);
+    try {
+      await googleLogin();
+      router.push('/profile');
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Google sign-in failed. Please try again.');
+    } finally {
+      setIsAuthLoading(false);
+    }
+  }
+
+  // Send Firebase Phone OTP
+  async function handleBuyerSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrorMsg('');
-    if (buyerMobile.length !== 10) {
-      setErrorMsg('Mobile number must be exactly 10 digits.');
+
+    const cleanMobile = buyerMobile.replace(/\D/g, '');
+    if (cleanMobile.length !== 10) {
+      setErrorMsg('Mobile number must be exactly 10 digits (e.g. 9876543210).');
       return;
     }
     if (!buyerEmail.includes('@')) {
       setErrorMsg('Please provide a valid email address.');
       return;
     }
-    setAuthStep('otp');
-  }
 
-  function handleVerifyBuyerOTP(e: React.FormEvent) {
-    e.preventDefault();
-    if (otpInput.trim() === DEMO_OTP || otpInput.trim() === '654321') {
-      const ok = registerBuyer(buyerName || 'Valued Customer', buyerMobile, buyerEmail);
-      if (ok) {
-        router.push('/profile');
+    setIsAuthLoading(true);
+
+    try {
+      // Direct demo login fallback for testing number
+      if (cleanMobile === DEMO_CUSTOMER_MOBILE) {
+        setAuthStep('otp');
+        setResendTimer(30);
+        setIsAuthLoading(false);
+        return;
       }
-    } else {
-      setErrorMsg(`Invalid OTP. Use Demo OTP: ${DEMO_OTP}`);
+
+      const result = await sendPhoneOTP(cleanMobile, 'recaptcha-container');
+      setConfirmationResult(result);
+      setAuthStep('otp');
+      setResendTimer(30);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Could not send OTP. Please check your mobile number.');
+    } finally {
+      setIsAuthLoading(false);
     }
   }
 
+  // Verify Firebase Phone OTP
+  async function handleVerifyBuyerOTP(e: React.FormEvent) {
+    e.preventDefault();
+    setErrorMsg('');
+
+    const cleanOtp = otpInput.trim();
+    if (cleanOtp.length !== 6) {
+      setErrorMsg('OTP must be exactly 6 digits.');
+      return;
+    }
+
+    setIsAuthLoading(true);
+
+    try {
+      const cleanMobile = buyerMobile.replace(/\D/g, '');
+
+      // Demo OTP fallback
+      if ((cleanMobile === DEMO_CUSTOMER_MOBILE || !confirmationResult) && (cleanOtp === DEMO_OTP || cleanOtp === '654321')) {
+        const ok = registerBuyer(buyerName || 'Valued Customer', cleanMobile, buyerEmail);
+        if (ok) {
+          router.push('/profile');
+        }
+        return;
+      }
+
+      if (confirmationResult) {
+        await verifyOTP(confirmationResult, cleanOtp);
+        registerBuyer(buyerName || 'Valued Customer', cleanMobile, buyerEmail);
+        router.push('/profile');
+      } else {
+        setErrorMsg('Verification session expired. Please request a new OTP.');
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Invalid OTP code. Please check and re-enter.');
+    } finally {
+      setIsAuthLoading(false);
+    }
+  }
+
+  // Resend OTP Handler
+  async function handleResendOTP() {
+    if (resendTimer > 0 || isAuthLoading) return;
+    setErrorMsg('');
+    setIsAuthLoading(true);
+    try {
+      const cleanMobile = buyerMobile.replace(/\D/g, '');
+      const result = await sendPhoneOTP(cleanMobile, 'recaptcha-container');
+      setConfirmationResult(result);
+      setResendTimer(30);
+      setErrorMsg('New OTP code sent to your mobile phone!');
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Failed to resend OTP.');
+    } finally {
+      setIsAuthLoading(false);
+    }
+  }
+
+  // Seller Registration
   function handleSellerRegistration(e: React.FormEvent) {
     e.preventDefault();
     setErrorMsg('');
-    if (sellerMobile.length !== 10) {
+    const cleanMobile = sellerMobile.replace(/\D/g, '');
+    if (cleanMobile.length !== 10) {
       setErrorMsg('Mobile number must be 10 digits.');
       return;
     }
@@ -85,7 +196,7 @@ export default function LoginPage() {
     const reg = registerSeller({
       firmName,
       ownerName,
-      mobile: sellerMobile,
+      mobile: cleanMobile,
       email: sellerEmail,
       state: sellerState,
       city: sellerCity,
@@ -97,12 +208,15 @@ export default function LoginPage() {
     });
 
     setPendingNotice(
-      `Registration Submitted for "${reg.firmName}". Our website audit team will review your PAN (${reg.panNumber}) and firm credentials within 24–48 hours. A verification email has been sent to ${reg.email}.`
+      `Registration Submitted for "${reg.firmName}". Our website audit team will review your PAN (${reg.panNumber}) and firm credentials within 24–48 hours. A verification notification has been sent to ${reg.email}.`
     );
   }
 
   return (
     <div className="mx-auto w-full max-w-4xl px-6 py-36 font-sans bg-[#faeee7] text-[#33272a]">
+      {/* Invisible reCAPTCHA container */}
+      <div id="recaptcha-container" className="sr-only" aria-hidden="true" />
+
       <header className="text-center max-w-2xl mx-auto">
         <span className="label-eyebrow text-xs">Heritage Subcontinent Authentication</span>
         <h1 className="display-h mt-2 text-4xl text-[#33272a] sm:text-5xl">
@@ -116,6 +230,7 @@ export default function LoginPage() {
       {/* Portal Selection Segmented Control */}
       <div className="mt-10 flex max-w-md mx-auto rounded-full border border-[#33272a]/20 bg-[#fffffe] p-1.5 shadow-sm">
         <button
+          type="button"
           onClick={() => {
             setPortalType('buyer');
             setPendingNotice(null);
@@ -130,6 +245,7 @@ export default function LoginPage() {
           1. Buyer / Customer
         </button>
         <button
+          type="button"
           onClick={() => {
             setPortalType('seller');
             setPendingNotice(null);
@@ -151,10 +267,13 @@ export default function LoginPage() {
           <span className="text-[10px] uppercase tracking-wider text-[#ff8ba7] font-bold">
             Demo Portal Credentials
           </span>
-          <span className="text-[10px] text-[#594a4e]">Universal Demo OTP: <strong className="font-mono text-[#33272a]">{DEMO_OTP}</strong></span>
+          <span className="text-[10px] text-[#594a4e]">
+            Universal Demo OTP: <strong className="font-mono text-[#33272a]">{DEMO_OTP}</strong>
+          </span>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           <button
+            type="button"
             onClick={() => {
               loginAsDemoCustomer();
               router.push('/profile');
@@ -164,6 +283,7 @@ export default function LoginPage() {
             Sign In as Customer ({DEMO_CUSTOMER_MOBILE})
           </button>
           <button
+            type="button"
             onClick={() => {
               loginAsDemoSeller();
               router.push('/seller');
@@ -173,6 +293,7 @@ export default function LoginPage() {
             Sign In as Approved Seller ({DEMO_SELLER_MOBILE})
           </button>
           <button
+            type="button"
             onClick={() => {
               loginAsDemoAdmin();
               router.push('/admin');
@@ -184,22 +305,62 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* PORTAL FORM 1: BUYER ACCOUNT (MOBILE + EMAIL NEEDED) */}
+      {/* PORTAL FORM 1: BUYER ACCOUNT (FIREBASE GOOGLE + PHONE OTP) */}
       {portalType === 'buyer' && (
         <div className="mt-8 max-w-xl mx-auto rounded-3xl border border-[#33272a]/15 bg-[#fffffe] p-8 shadow-md">
           <h2 className="display-h text-2xl text-[#33272a]">Buyer Account Registration &amp; Sign In</h2>
           <p className="mt-1 text-xs text-[#594a4e]">
-            Both Mobile Number (+91) and Email Address are required to create a buyer account.
+            Sign in with your Google account or receive an SMS OTP on your +91 mobile number.
           </p>
 
+          {/* Google Sign-In Button */}
+          <div className="mt-6">
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={isAuthLoading}
+              className="flex w-full items-center justify-center gap-3 rounded-2xl border border-[#33272a]/20 bg-[#fffffe] py-3 text-xs font-bold text-[#33272a] shadow-xs transition hover:border-[#ff8ba7] hover:bg-[#faeee7] disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Sign in with Google"
+            >
+              <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.15C3.26 21.3 7.31 24 12 24z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z"
+                />
+              </svg>
+              <span>{isAuthLoading ? 'Connecting to Google...' : 'Continue with Google Account'}</span>
+            </button>
+          </div>
+
+          <div className="relative my-6 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-[#33272a]/15" />
+            </div>
+            <span className="relative bg-[#fffffe] px-4 text-[10px] uppercase tracking-widest text-[#594a4e] font-bold">
+              Or Sign In with SMS OTP
+            </span>
+          </div>
+
           {errorMsg && (
-            <p className="mt-4 rounded-xl bg-rose-50 p-3 text-center text-xs font-semibold text-rose-700">
+            <p className="mb-4 rounded-xl bg-rose-50 p-3 text-center text-xs font-semibold text-rose-700">
               {errorMsg}
             </p>
           )}
 
           {authStep === 'input' ? (
-            <form onSubmit={handleBuyerSubmit} className="mt-6 space-y-4">
+            <form onSubmit={handleBuyerSubmit} className="space-y-4">
               <div>
                 <label className="text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold">Your Full Name</label>
                 <input
@@ -242,14 +403,35 @@ export default function LoginPage() {
                 />
               </div>
 
-              <button type="submit" className="wax-button w-full py-3 text-xs">
-                Proceed to OTP Verification →
+              <button
+                type="submit"
+                disabled={isAuthLoading}
+                className="wax-button w-full py-3 text-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isAuthLoading ? (
+                  <>
+                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#33272a] border-t-transparent" />
+                    <span>Sending SMS OTP...</span>
+                  </>
+                ) : (
+                  <span>Send Verification OTP →</span>
+                )}
               </button>
             </form>
           ) : (
-            <form onSubmit={handleVerifyBuyerOTP} className="mt-6 space-y-4">
+            <form onSubmit={handleVerifyBuyerOTP} className="space-y-4">
               <div>
-                <label className="text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold">Enter 6-Digit OTP</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold">Enter 6-Digit OTP</label>
+                  <button
+                    type="button"
+                    onClick={handleResendOTP}
+                    disabled={resendTimer > 0 || isAuthLoading}
+                    className="text-[10px] font-bold uppercase tracking-wider text-[#ff8ba7] hover:underline disabled:text-zinc-400 disabled:no-underline"
+                  >
+                    {resendTimer > 0 ? `Resend OTP in ${resendTimer}s` : 'Resend OTP'}
+                  </button>
+                </div>
                 <p className="text-xs text-[#594a4e]">Sent to +91 {buyerMobile} &amp; {buyerEmail}</p>
                 <input
                   type="text"
@@ -267,11 +449,23 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => setAuthStep('input')}
                   className="ghost-button px-4 py-2.5 text-xs"
+                  disabled={isAuthLoading}
                 >
                   Edit Details
                 </button>
-                <button type="submit" className="wax-button flex-1 py-2.5 text-xs">
-                  Create Buyer Account &amp; Sign In
+                <button
+                  type="submit"
+                  disabled={isAuthLoading}
+                  className="wax-button flex-1 py-2.5 text-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isAuthLoading ? (
+                    <>
+                      <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#33272a] border-t-transparent" />
+                      <span>Verifying OTP...</span>
+                    </>
+                  ) : (
+                    <span>Create Account &amp; Sign In</span>
+                  )}
                 </button>
               </div>
             </form>
