@@ -2,44 +2,44 @@ import Link from 'next/link';
 
 export function Logo({ size = 'medium', href = '/' }: { size?: 'small' | 'medium' | 'large'; href?: string }) {
   const iconSizes = {
-    small: 'h-7 w-7',
-    medium: 'h-9 w-9',
-    large: 'h-12 w-12'
+    small: 'h-9 w-9 p-1',
+    medium: 'h-12 w-12 p-1.5',
+    large: 'h-16 w-16 p-2'
   };
 
   const titleSizes = {
-    small: 'text-lg',
-    medium: 'text-2xl',
-    large: 'text-4xl'
+    small: 'text-xl tracking-[0.16em]',
+    medium: 'text-2xl sm:text-3xl tracking-[0.18em]',
+    large: 'text-4xl sm:text-5xl tracking-[0.2em]'
   };
 
   const subtextSizes = {
-    small: 'text-[8px]',
-    medium: 'text-[9px]',
-    large: 'text-[11px]'
+    small: 'text-[9px] tracking-[0.28em]',
+    medium: 'text-[10px] tracking-[0.32em]',
+    large: 'text-[12px] tracking-[0.36em]'
   };
 
   return (
-    <Link href={href} className="group inline-flex items-center gap-3" aria-label="Loomlore Home">
-      {/* Lotus & Loom Interlocking Emblem */}
-      <div className={`relative flex items-center justify-center rounded-2xl bg-gradient-to-br from-[#ffc6c7] via-[#fffffe] to-[#faeee7] p-1.5 shadow-md border border-[#33272a]/20 transition duration-300 group-hover:scale-105 group-hover:border-[#ff8ba7] ${iconSizes[size]}`}>
+    <Link href={href} className="group inline-flex items-center gap-3.5" aria-label="Loomlore Home">
+      {/* Bold High-Definition Lotus & L Interlocking Emblem */}
+      <div className={`relative flex shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ff8ba7] via-[#fffffe] to-[#faeee7] shadow-md border-2 border-[#33272a]/20 transition duration-300 group-hover:scale-105 group-hover:border-[#ff8ba7] ${iconSizes[size]}`}>
         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-full w-full">
-          {/* Outer Ring */}
-          <circle cx="50" cy="50" r="44" stroke="#33272a" strokeWidth="4" opacity="0.2" />
-          <circle cx="50" cy="50" r="44" stroke="#ff8ba7" strokeWidth="3" strokeDasharray="12 8" />
+          {/* Decorative Dashed Ring */}
+          <circle cx="50" cy="50" r="44" stroke="#33272a" strokeWidth="5" opacity="0.25" />
+          <circle cx="50" cy="50" r="44" stroke="#ff8ba7" strokeWidth="4" strokeDasharray="12 8" />
           
-          {/* Stylized Lotus & L Motif */}
-          <path d="M50 15 C55 32 75 35 78 52 C81 69 64 80 50 82 C36 80 19 69 22 52 C25 35 45 32 50 15 Z" fill="#33272a" opacity="0.1" />
-          <path d="M50 22 Q60 45 74 54 Q50 68 50 80 Q50 68 26 54 Q40 45 50 22 Z" fill="url(#logoGrad)" />
+          {/* Bold Lotus Petal Motif */}
+          <path d="M50 14 C58 32 78 35 81 52 C84 69 66 81 50 83 C34 81 16 69 19 52 C22 35 42 32 50 14 Z" fill="#33272a" opacity="0.15" />
+          <path d="M50 20 Q62 44 76 54 Q50 70 50 82 Q50 70 24 54 Q38 44 50 20 Z" fill="url(#logoGradBold)" />
           
-          {/* L Letter Interlocking Accent */}
-          <path d="M38 34 V68 H62" stroke="#fffffe" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M38 34 V68 H62" stroke="#33272a" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+          {/* Bold Interlocking L Accent */}
+          <path d="M36 32 V68 H64" stroke="#fffffe" strokeWidth="11" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M36 32 V68 H64" stroke="#33272a" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
 
           <defs>
-            <linearGradient id="logoGrad" x1="26" y1="22" x2="74" y2="80" gradientUnits="userSpaceOnUse">
+            <linearGradient id="logoGradBold" x1="24" y1="20" x2="76" y2="82" gradientUnits="userSpaceOnUse">
               <stop stopColor="#ff8ba7" />
-              <stop offset="0.7" stopColor="#ffc6c7" />
+              <stop offset="0.6" stopColor="#ffc6c7" />
               <stop offset="1" stopColor="#33272a" />
             </linearGradient>
           </defs>
@@ -48,10 +48,10 @@ export function Logo({ size = 'medium', href = '/' }: { size?: 'small' | 'medium
 
       {/* Soria Serif Wordmark */}
       <div className="flex flex-col">
-        <span className={`display-h tracking-[0.18em] text-[#33272a] font-bold leading-none ${titleSizes[size]}`}>
+        <span className={`display-h text-[#33272a] font-bold leading-none ${titleSizes[size]}`}>
           LOOMLORE
         </span>
-        <span className={`font-sans tracking-[0.32em] text-[#ff8ba7] font-bold uppercase leading-tight mt-0.5 ${subtextSizes[size]}`}>
+        <span className={`font-sans text-[#ff8ba7] font-bold uppercase leading-tight mt-1 ${subtextSizes[size]}`}>
           Heirlooms of India
         </span>
       </div>
