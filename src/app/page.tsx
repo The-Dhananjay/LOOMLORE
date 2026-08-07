@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { ProductCard } from '@/components/ProductCard';
 import { products } from '@/data/catalog';
-import { formatINR } from '@/lib/india';
 
 const featured = [
   products[0], // Bandhani Saree
@@ -19,7 +18,7 @@ const regions = [
 ];
 
 export default function HomePage() {
-  const heroProduct = products[0];
+  const heroImage = products[0].image;
 
   return (
     <div className="bg-[#faeee7] text-[#33272a] font-sans">
@@ -68,61 +67,18 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right Column: High-Fashion Integrated Hero Photo Card */}
+            {/* Right Column: Clean High-Resolution Hero Editorial Image Showcase */}
             <div className="relative mx-auto w-full max-w-md">
-              <Link
-                href={`/catalog/${heroProduct.slug}`}
-                className="group relative block overflow-hidden rounded-[32px] border border-[#33272a]/15 bg-[#fffffe] shadow-2xl transition duration-500 hover:-translate-y-1.5 hover:shadow-2xl"
-              >
-                {/* Photo aspect 3/4 */}
+              <div className="group relative block overflow-hidden rounded-[36px] border border-[#33272a]/15 bg-[#fffffe] shadow-2xl transition duration-500 hover:-translate-y-1 hover:shadow-2xl">
                 <div className="relative aspect-[3/4] overflow-hidden bg-[#faeee7]">
                   <img
-                    src={heroProduct.image}
-                    alt={heroProduct.name}
+                    src={heroImage}
+                    alt="Authentic Indian Handwoven Drape Showcase"
                     className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                     fetchPriority="high"
                   />
-
-                  {/* Dark Vignette Gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#33272a]/90 via-[#33272a]/30 to-transparent" />
-
-                  {/* Top Badge */}
-                  <div className="absolute left-4 top-4 z-10">
-                    <span className="rounded-full border border-[#fffffe]/30 bg-[#fffffe]/90 px-3.5 py-1 text-[9px] uppercase tracking-[0.2em] text-[#33272a] font-bold shadow-xs backdrop-blur">
-                      ✨ Heirloom Highlight · {heroProduct.fabric}
-                    </span>
-                  </div>
-
-                  {/* Bottom Integrated Overlay */}
-                  <div className="absolute inset-x-0 bottom-0 p-6 z-10 text-[#fffffe]">
-                    <span className="text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold">
-                      {heroProduct.state} · {heroProduct.artisan}
-                    </span>
-
-                    <h3 className="display-h mt-1 text-2xl text-[#fffffe] group-hover:text-[#ff8ba7] transition">
-                      {heroProduct.name}
-                    </h3>
-
-                    <div className="mt-3 flex items-baseline justify-between border-t border-[#fffffe]/20 pt-3">
-                      <div className="flex items-baseline gap-2">
-                        <span className="display-h text-2xl font-bold text-[#fffffe]">
-                          {formatINR(heroProduct.priceINR)}
-                        </span>
-                        <span className="text-xs text-[#fffffe]/60 line-through">
-                          {formatINR(heroProduct.originalPriceINR || Math.round(heroProduct.priceINR * 1.25))}
-                        </span>
-                        <span className="rounded-md bg-rose-500/90 px-2 py-0.5 text-[9px] font-bold text-white">
-                          25% OFF
-                        </span>
-                      </div>
-
-                      <span className="text-xs uppercase tracking-wider text-[#ff8ba7] font-bold group-hover:translate-x-1 transition">
-                        Explore Drape →
-                      </span>
-                    </div>
-                  </div>
                 </div>
-              </Link>
+              </div>
             </div>
 
           </div>
