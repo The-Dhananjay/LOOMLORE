@@ -1,0 +1,4 @@
+Contact: mailto:security@loomlore.in
+Expires: 2026-12-31T23:59:59z
+Preferred-Languages: en
+Canonical: https://loomlore.in/.well-known/security.txt

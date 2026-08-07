@@ -1,0 +1,142 @@
+@import url('https://fonts.cdnfonts.com/css/soria');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Soria';
+  src: url('https://fonts.cdnfonts.com/s/72814/Soria-Font.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vermica';
+  src: url('https://fonts.cdnfonts.com/s/95123/Vermica.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+  --paper: #fffffe;
+  --ink: #33272a;
+  --text-headline: #33272a;
+  --text-paragraph: #594a4e;
+  --theme-bg: #faeee7;
+  --theme-surface: #fffffe;
+  --theme-primary: #ff8ba7;
+  --theme-secondary: #ffc6c7;
+  --theme-tertiary: #c3f0ca;
+  --theme-stroke: #33272a;
+}
+
+html, body {
+  background-color: #faeee7;
+  color: #33272a;
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 220ms ease;
+}
+
+html { scroll-behavior: smooth; }
+body { min-width: 320px; }
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .55;
+  background:
+    radial-gradient(48rem 32rem at 92% -12%, rgba(255, 139, 167, 0.18), transparent 72%),
+    radial-gradient(35rem 26rem at -5% 92%, rgba(255, 198, 199, 0.35), transparent 70%);
+  transition: background 220ms ease;
+}
+
+::selection { background: #ff8ba7; color: #33272a; }
+
+input, select, button, textarea { font: inherit; }
+
+@layer components {
+  .display-h {
+    font-family: 'Soria', 'Playfair Display', Georgia, serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: #33272a;
+  }
+
+  .label-eyebrow {
+    @apply text-[11px] uppercase tracking-[0.25em] font-semibold;
+    color: #ff8ba7;
+    font-family: 'Outfit', sans-serif;
+  }
+
+  .royal-card {
+    @apply relative overflow-hidden rounded-2xl border backdrop-blur transition-all duration-300;
+    border-color: rgba(51, 39, 42, 0.12);
+    background: #fffffe;
+    box-shadow: 0 10px 30px -15px rgba(51, 39, 42, 0.08);
+  }
+  .royal-card:hover {
+    border-color: #ff8ba7;
+    box-shadow: 0 20px 45px -15px rgba(255, 139, 167, 0.25);
+  }
+
+  .gold-rule {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #ff8ba7 30%, #ffc6c7 50%, #ff8ba7 70%, transparent);
+  }
+
+  .nav-link {
+    @apply relative text-[13px] tracking-[0.12em] font-semibold text-[#33272a] transition-all duration-200 uppercase;
+    font-family: 'Outfit', sans-serif;
+  }
+  .nav-link:hover {
+    color: #ff8ba7;
+  }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -4px;
+    width: 0;
+    height: 2px;
+    border-radius: 9999px;
+    background: #ff8ba7;
+    transition: width 220ms ease;
+    transform: translateX(-50%);
+  }
+  .nav-link:hover::after { width: 100%; }
+
+  .wax-button {
+    @apply relative inline-flex items-center justify-center gap-2 rounded-full px-6 py-2 text-xs uppercase tracking-[0.15em] text-[#33272a] font-bold shadow-sm;
+    font-family: 'Outfit', sans-serif;
+    background: #ff8ba7;
+    border: 1px solid rgba(51, 39, 42, 0.15);
+    transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease;
+  }
+  .wax-button:hover {
+    transform: translateY(-1px);
+    background: #ffc6c7;
+    box-shadow: 0 10px 25px -6px rgba(255, 139, 167, 0.4);
+  }
+
+  .ghost-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-[#33272a]/20 bg-[#fffffe] px-5 py-2 text-xs uppercase tracking-[0.15em] text-[#33272a] font-semibold transition backdrop-blur;
+    font-family: 'Outfit', sans-serif;
+  }
+  .ghost-button:hover { background: #ffc6c7; border-color: #ff8ba7; color: #33272a; }
+}
+
+:focus-visible {
+  outline: 2px solid #ff8ba7;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
