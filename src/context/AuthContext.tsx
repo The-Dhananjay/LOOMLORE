@@ -4,12 +4,14 @@ import React, { createContext, useContext, useEffect, useState, useMemo } from '
 import {
   User,
   UserCredential,
-  ConfirmationResult,
-  RecaptchaVerifier,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  sendEmailVerification,
   signInWithPopup,
-  signInWithPhoneNumber,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  updateProfile
 } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
 import { useAuthStore } from '@/lib/auth';
@@ -18,11 +20,11 @@ export type AuthContextType = {
   user: User | null;
   loading: boolean;
   googleLogin: () => Promise<User>;
-  sendPhoneOTP: (phoneNumber: string, containerId?: string) => Promise<ConfirmationResult>;
-  verifyOTP: (confirmationResult: ConfirmationResult, otp: string) => Promise<UserCredential>;
+  emailRegister: (email: string, password: string, displayName: string) => Promise<User>;
+  emailLogin: (email: string, password: string) => Promise<User>;
+  sendPasswordReset: (email: string) => Promise<void>;
+  resendVerificationEmail: () => Promise<void>;
   logout: () => Promise<void>;
-  clearRecaptcha: () => void;
-  formatIndianPhone: (mobile: string) => string;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,7 +32,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [recaptchaVerifier, setRecaptchaVerifier] = useState<RecaptchaVerifier | null>(null);
 
   const { loginWithMobile, logout: storeLogout } = useAuthStore();
 
@@ -41,36 +42,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (currentUser) {
         // Sync Firebase auth user with Loomlore Zustand store
-        const mobile = currentUser.phoneNumber ? currentUser.phoneNumber.replace('+91', '').trim() : '9876543210';
-        const email = currentUser.email || `${mobile}@loomlore.in`;
-        loginWithMobile(mobile, email);
+        const email = currentUser.email || 'customer@loomlore.in';
+        const name = currentUser.displayName || 'Valued Customer';
+        loginWithMobile('9876543210', email);
+        useAuthStore.getState().updateProfile({ name, email });
       }
     });
 
     return () => unsubscribe();
   }, [loginWithMobile]);
-
-  const clearRecaptcha = () => {
-    if (recaptchaVerifier) {
-      try {
-        recaptchaVerifier.clear();
-      } catch (err) {
-        // Ignore cleanup errors
-      }
-      setRecaptchaVerifier(null);
-    }
-  };
-
-  const formatIndianPhone = (mobile: string): string => {
-    const clean = mobile.replace(/\D/g, '');
-    if (clean.startsWith('91') && clean.length === 12) {
-      return `+${clean}`;
-    }
-    if (clean.length === 10) {
-      return `+91${clean}`;
-    }
-    return mobile.startsWith('+') ? mobile : `+${clean}`;
-  };
 
   const googleLogin = async (): Promise<User> => {
     try {
@@ -97,71 +77,77 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const sendPhoneOTP = async (
-    phoneNumber: string,
-    containerId: string = 'recaptcha-container'
-  ): Promise<ConfirmationResult> => {
-    const formattedNumber = formatIndianPhone(phoneNumber);
-
-    if (formattedNumber.length < 13) {
-      throw new Error('Please enter a valid 10-digit Indian mobile number (+91).');
-    }
-
+  const emailRegister = async (email: string, password: string, displayName: string): Promise<User> => {
     try {
-      clearRecaptcha();
-
-      let element = document.getElementById(containerId);
-      if (!element) {
-        element = document.createElement('div');
-        element.id = containerId;
-        document.body.appendChild(element);
+      const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+      if (displayName && credential.user) {
+        await updateProfile(credential.user, { displayName });
       }
-
-      // Standard Firebase Web Phone Authentication RecaptchaVerifier
-      const verifier = new RecaptchaVerifier(auth, containerId, {
-        size: 'invisible'
-      });
-
-      setRecaptchaVerifier(verifier);
-      const confirmationResult = await signInWithPhoneNumber(auth, formattedNumber, verifier);
-      return confirmationResult;
+      // Send Email Verification
+      await sendEmailVerification(credential.user);
+      return credential.user;
     } catch (error: any) {
-      clearRecaptcha();
-      if (error.code === 'auth/api-key-not-valid' || error.message?.includes('api-key-not-valid')) {
-        throw new Error('APIKEY_INVALID: Firebase API Key is invalid or restricted in Google Cloud Console.');
+      if (error.code === 'auth/email-already-in-use') {
+        throw new Error('An account already exists with this email address. Please sign in instead.');
       }
-      if (error.code === 'auth/invalid-phone-number') {
-        throw new Error('Invalid mobile number format. Please enter a valid 10-digit number.');
+      if (error.code === 'auth/invalid-email') {
+        throw new Error('Please enter a valid email address.');
       }
-      if (error.code === 'auth/too-many-requests') {
-        throw new Error('Too many verification attempts. Please wait a moment and try again.');
+      if (error.code === 'auth/weak-password') {
+        throw new Error('Password is too weak. Please use at least 6 characters.');
       }
-      if (error.code === 'auth/quota-exceeded') {
-        throw new Error('SMS quota exceeded. Please try again later.');
-      }
-      throw new Error(error.message || 'Failed to send OTP SMS. Please check your number.');
+      throw new Error(error.message || 'Registration failed. Please try again.');
     }
   };
 
-  const verifyOTP = async (
-    confirmationResult: ConfirmationResult,
-    otp: string
-  ): Promise<UserCredential> => {
+  const emailLogin = async (email: string, password: string): Promise<User> => {
     try {
-      const cleanOtp = otp.trim();
-      if (cleanOtp.length !== 6) {
-        throw new Error('OTP must be exactly 6 digits.');
+      const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
+      
+      // Email Verification Check
+      if (!credential.user.emailVerified) {
+        // Resend verification email if unverified
+        try {
+          await sendEmailVerification(credential.user);
+        } catch (e) {
+          // Ignore resend rate limits
+        }
+        throw new Error('EMAIL_UNVERIFIED: Please verify your email address before signing in. A new verification link has been sent to your inbox.');
       }
-      const credential = await confirmationResult.confirm(cleanOtp);
-      return credential;
+
+      const userEmail = credential.user.email || email;
+      const userName = credential.user.displayName || 'Valued Customer';
+      loginWithMobile('9876543210', userEmail);
+      useAuthStore.getState().updateProfile({ name: userName, email: userEmail });
+      return credential.user;
     } catch (error: any) {
-      if (error.code === 'auth/invalid-verification-code') {
-        throw new Error('Invalid 6-digit OTP code entered. Please check and re-enter.');
+      if (error.message?.includes('EMAIL_UNVERIFIED')) {
+        throw error;
       }
-      if (error.code === 'auth/code-expired') {
-        throw new Error('OTP verification code has expired. Please click resend to get a new code.');
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        throw new Error('Invalid email or password. Please check your credentials and try again.');
       }
-      throw new Error(error.message || 'OTP verification failed. Please try again.');
+      if (error.code === 'auth/too-many-requests') {
+        throw new Error('Too many failed attempts. Please reset your password or try again later.');
+      }
+      throw new Error(error.message || 'Email sign-in failed. Please try again.');
+    }
+  };
+
+  const sendPasswordReset = async (email: string): Promise<void> => {
+    try {
+      await sendPasswordResetEmail(auth, email.trim());
+    } catch (error: any) {
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-email') {
+        throw new Error('Please enter a valid email address associated with your account.');
+      }
+      throw new Error(error.message || 'Failed to send password reset email. Please try again.');
+    }
+  };
+
+  const resendVerificationEmail = async (): Promise<void> => {
+    if (auth.currentUser) {
+      await sendEmailVerification(auth.currentUser);
     }
   };
 
@@ -169,7 +155,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await signOut(auth);
       storeLogout();
-      clearRecaptcha();
     } catch (error: any) {
       storeLogout();
     }
@@ -180,11 +165,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       loading,
       googleLogin,
-      sendPhoneOTP,
-      verifyOTP,
-      logout,
-      clearRecaptcha,
-      formatIndianPhone
+      emailRegister,
+      emailLogin,
+      sendPasswordReset,
+      resendVerificationEmail,
+      logout
     }),
     [user, loading]
   );
