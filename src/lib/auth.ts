@@ -78,27 +78,8 @@ export const DEMO_OTP = '123456';
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
-      user: {
-        id: 'usr-demo-01',
-        name: 'Rohan Sharma',
-        mobile: DEMO_CUSTOMER_MOBILE,
-        email: 'rohan.sharma@example.com',
-        role: 'customer',
-        addresses: [
-          {
-            id: 'addr-01',
-            name: 'Rohan Sharma',
-            mobile: '9876543210',
-            pincode: '110001',
-            addressLine: 'Flat 402, Royal Residency, Connaught Place',
-            city: 'New Delhi',
-            state: 'Delhi',
-            isDefault: true
-          }
-        ],
-        purchasedProductIds: ['raj-w-01']
-      },
-      isLoggedIn: true,
+      user: null,
+      isLoggedIn: false,
       isLoginModalOpen: false,
 
       pendingSellers: [
@@ -213,12 +194,11 @@ export const useAuthStore = create<AuthState>()(
 
       loginWithMobile: (mobile, email) => {
         const cleanMobile = mobile.replace(/\D/g, '');
-        if (cleanMobile === DEMO_SELLER_MOBILE) {
-          get().loginAsDemoSeller();
-          return true;
-        }
-        if (cleanMobile === DEMO_ADMIN_MOBILE) {
-          get().loginAsDemoAdmin();
+        
+        // Retain existing user profile if mobile matches
+        const currentUser = get().user;
+        if (currentUser && currentUser.mobile === cleanMobile) {
+          set({ isLoggedIn: true, isLoginModalOpen: false });
           return true;
         }
 

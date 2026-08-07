@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { ConfirmationResult } from 'firebase/auth';
 import { useAuth } from '@/hooks/useAuth';
-import { useAuthStore, DEMO_CUSTOMER_MOBILE, DEMO_SELLER_MOBILE, DEMO_ADMIN_MOBILE, DEMO_OTP } from '@/lib/auth';
+import { useAuthStore } from '@/lib/auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,10 +13,7 @@ export default function LoginPage() {
   const {
     isLoggedIn,
     registerBuyer,
-    registerSeller,
-    loginAsDemoCustomer,
-    loginAsDemoSeller,
-    loginAsDemoAdmin
+    registerSeller
   } = useAuthStore();
 
   const [portalType, setPortalType] = useState<'buyer' | 'seller'>('buyer');
@@ -103,14 +100,6 @@ export default function LoginPage() {
     setIsAuthLoading(true);
 
     try {
-      // Direct demo login fallback for testing number
-      if (cleanMobile === DEMO_CUSTOMER_MOBILE) {
-        setAuthStep('otp');
-        setResendTimer(30);
-        setIsAuthLoading(false);
-        return;
-      }
-
       const result = await sendPhoneOTP(cleanMobile, 'recaptcha-container');
       setConfirmationResult(result);
       setAuthStep('otp');
@@ -133,27 +122,18 @@ export default function LoginPage() {
       return;
     }
 
+    if (!confirmationResult) {
+      setErrorMsg('Verification session expired. Please request a new OTP.');
+      return;
+    }
+
     setIsAuthLoading(true);
 
     try {
       const cleanMobile = buyerMobile.replace(/\D/g, '');
-
-      // Demo OTP fallback
-      if ((cleanMobile === DEMO_CUSTOMER_MOBILE || !confirmationResult) && (cleanOtp === DEMO_OTP || cleanOtp === '654321')) {
-        const ok = registerBuyer(buyerName || 'Valued Customer', cleanMobile, buyerEmail);
-        if (ok) {
-          router.push('/profile');
-        }
-        return;
-      }
-
-      if (confirmationResult) {
-        await verifyOTP(confirmationResult, cleanOtp);
-        registerBuyer(buyerName || 'Valued Customer', cleanMobile, buyerEmail);
-        router.push('/profile');
-      } else {
-        setErrorMsg('Verification session expired. Please request a new OTP.');
-      }
+      await verifyOTP(confirmationResult, cleanOtp);
+      registerBuyer(buyerName || 'Valued Customer', cleanMobile, buyerEmail);
+      router.push('/profile');
     } catch (err: any) {
       setErrorMsg(err.message || 'Invalid OTP code. Please check and re-enter.');
     } finally {
@@ -261,56 +241,12 @@ export default function LoginPage() {
         </button>
       </div>
 
-      {/* Demo Credentials Alert Banner */}
-      <div className="mt-8 max-w-xl mx-auto rounded-3xl border border-[#ff8ba7]/40 bg-[#fffffe] p-5 shadow-xs">
-        <div className="flex items-center justify-between">
-          <span className="text-[10px] uppercase tracking-wider text-[#ff8ba7] font-bold">
-            Demo Portal Credentials
-          </span>
-          <span className="text-[10px] text-[#594a4e]">
-            Universal Demo OTP: <strong className="font-mono text-[#33272a]">{DEMO_OTP}</strong>
-          </span>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              loginAsDemoCustomer();
-              router.push('/profile');
-            }}
-            className="ghost-button flex-1 text-[10px] py-1.5"
-          >
-            Sign In as Customer ({DEMO_CUSTOMER_MOBILE})
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              loginAsDemoSeller();
-              router.push('/seller');
-            }}
-            className="wax-button flex-1 text-[10px] py-1.5"
-          >
-            Sign In as Approved Seller ({DEMO_SELLER_MOBILE})
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              loginAsDemoAdmin();
-              router.push('/admin');
-            }}
-            className="rounded-full border border-[#33272a]/20 bg-[#faeee7] px-3 py-1 text-[10px] uppercase tracking-wider text-[#33272a] font-bold"
-          >
-            Website Admin Team ({DEMO_ADMIN_MOBILE})
-          </button>
-        </div>
-      </div>
-
-      {/* PORTAL FORM 1: BUYER ACCOUNT (FIREBASE GOOGLE + PHONE OTP) */}
+      {/* PORTAL FORM 1: BUYER ACCOUNT (REAL FIREBASE AUTH) */}
       {portalType === 'buyer' && (
         <div className="mt-8 max-w-xl mx-auto rounded-3xl border border-[#33272a]/15 bg-[#fffffe] p-8 shadow-md">
           <h2 className="display-h text-2xl text-[#33272a]">Buyer Account Registration &amp; Sign In</h2>
           <p className="mt-1 text-xs text-[#594a4e]">
-            Sign in with your Google account or receive an SMS OTP on your +91 mobile number.
+            Sign in with your Google account or receive a real SMS OTP on your +91 mobile number.
           </p>
 
           {/* Google Sign-In Button */}
@@ -349,7 +285,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-[#33272a]/15" />
             </div>
             <span className="relative bg-[#fffffe] px-4 text-[10px] uppercase tracking-widest text-[#594a4e] font-bold">
-              Or Sign In with SMS OTP
+              Or Sign In with Real SMS OTP
             </span>
           </div>
 
@@ -411,10 +347,10 @@ export default function LoginPage() {
                 {isAuthLoading ? (
                   <>
                     <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#33272a] border-t-transparent" />
-                    <span>Sending SMS OTP...</span>
+                    <span>Sending Real SMS OTP...</span>
                   </>
                 ) : (
-                  <span>Send Verification OTP →</span>
+                  <span>Send Real SMS OTP →</span>
                 )}
               </button>
             </form>
@@ -422,7 +358,7 @@ export default function LoginPage() {
             <form onSubmit={handleVerifyBuyerOTP} className="space-y-4">
               <div>
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold">Enter 6-Digit OTP</label>
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold">Enter 6-Digit SMS OTP</label>
                   <button
                     type="button"
                     onClick={handleResendOTP}
@@ -438,7 +374,7 @@ export default function LoginPage() {
                   maxLength={6}
                   value={otpInput}
                   onChange={(e) => setOtpInput(e.target.value)}
-                  placeholder="123456"
+                  placeholder="Enter SMS OTP"
                   className="mt-2 w-full text-center text-2xl tracking-[0.5em] font-mono rounded-xl border border-[#33272a]/20 bg-[#faeee7] px-3.5 py-2.5 text-[#33272a] outline-none focus:border-[#ff8ba7]"
                   required
                 />
@@ -464,7 +400,7 @@ export default function LoginPage() {
                       <span>Verifying OTP...</span>
                     </>
                   ) : (
-                    <span>Create Account &amp; Sign In</span>
+                    <span>Verify OTP &amp; Sign In</span>
                   )}
                 </button>
               </div>
