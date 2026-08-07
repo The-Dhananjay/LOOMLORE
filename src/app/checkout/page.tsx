@@ -10,7 +10,7 @@ import Link from 'next/link';
 export default function CheckoutPage() {
   const { items, getTotal, getTaxBreakdown, clearCart } = useCartStore();
   const { addOrderNotification, deductStockForOrder } = useSellerStore();
-  const { user, recordPurchasedProducts } = useAuthStore();
+  const { user, recordPurchasedProducts, addOrder } = useAuthStore();
 
   const [pin, setPin] = useState<string>('');
   const [method, setMethod] = useState<string>('upi');
@@ -31,7 +31,34 @@ export default function CheckoutPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const orderId = `LL-ORD-${Math.floor(10000 + Math.random() * 90000)}`;
+
+    const shippingAddressObj = {
+      id: `addr-${Date.now()}`,
+      name: custName,
+      mobile: custPhone,
+      pincode: pin || '221005',
+      addressLine: `${house}, ${street}`,
+      city: city,
+      state: stateName,
+      isDefault: true
+    };
+
+    const newOrder = addOrder({
+      items: items.map((i) => ({
+        id: i.product.id,
+        productId: i.product.id,
+        productName: i.product.name,
+        image: i.product.image,
+        priceINR: i.product.priceINR,
+        quantity: i.quantity,
+        size: i.selectedSize || 'Free Size'
+      })),
+      totalINR: total,
+      paymentMethod: method.toUpperCase(),
+      shippingAddress: shippingAddressObj
+    });
+
+    const orderId = newOrder.id;
     setLastOrderId(orderId);
 
     // Notify seller store & deduct stock

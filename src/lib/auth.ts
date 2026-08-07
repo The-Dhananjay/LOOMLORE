@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 
 export type UserRole = 'customer' | 'seller' | 'admin';
 export type SellerStatus = 'pending' | 'approved' | 'rejected';
+export type OrderStatus = 'Processing' | 'In Transit' | 'Out for Delivery' | 'Delivered';
 
 export type UserAddress = {
   id: string;
@@ -13,6 +14,29 @@ export type UserAddress = {
   city: string;
   state: string;
   isDefault: boolean;
+};
+
+export type OrderItem = {
+  id: string;
+  productId: string;
+  productName: string;
+  image: string;
+  priceINR: number;
+  quantity: number;
+  size: string;
+};
+
+export type UserOrder = {
+  id: string;
+  trackingId: string;
+  courierPartner: string;
+  date: string;
+  totalINR: number;
+  paymentMethod: string;
+  status: OrderStatus;
+  estimatedDelivery: string;
+  shippingAddress: UserAddress;
+  items: OrderItem[];
 };
 
 export type SellerRegistration = {
@@ -41,6 +65,7 @@ export type UserProfile = {
   sellerStatus?: SellerStatus;
   sellerDetails?: SellerRegistration;
   addresses: UserAddress[];
+  orders: UserOrder[];
   purchasedProductIds?: string[];
 };
 
@@ -58,22 +83,22 @@ type AuthState = {
   approveSeller: (sellerId: string) => void;
   rejectSeller: (sellerId: string) => void;
   
-  sendOTP: (mobile: string) => boolean;
-  verifyOTP: (mobile: string, otp: string) => boolean;
   loginWithMobile: (mobile: string, email?: string) => boolean;
-  loginAsDemoCustomer: () => void;
-  loginAsDemoSeller: () => void;
-  loginAsDemoAdmin: () => void;
   logout: () => void;
   updateProfile: (data: Partial<UserProfile>) => void;
+  
   addAddress: (address: Omit<UserAddress, 'id'>) => void;
+  deleteAddress: (addressId: string) => void;
+  setDefaultAddress: (addressId: string) => void;
+  
+  addOrder: (order: {
+    items: OrderItem[];
+    totalINR: number;
+    paymentMethod: string;
+    shippingAddress: UserAddress;
+  }) => UserOrder;
   recordPurchasedProducts: (productIds: string[]) => void;
 };
-
-export const DEMO_CUSTOMER_MOBILE = '9876543210';
-export const DEMO_SELLER_MOBILE = '9123456789';
-export const DEMO_ADMIN_MOBILE = '9999999999';
-export const DEMO_OTP = '123456';
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -97,7 +122,7 @@ export const useAuthStore = create<AuthState>()(
           ifscCode: 'SBIN0001234',
           craftSpecialty: 'Bandhani Rai Bandhej Georgette Sarees',
           status: 'pending',
-          submittedAt: new Date(Date.now() - 3600000 * 2).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+          submittedAt: new Date().toLocaleDateString('en-IN')
         }
       ],
 
@@ -106,67 +131,66 @@ export const useAuthStore = create<AuthState>()(
 
       registerBuyer: (name, mobile, email) => {
         const cleanMobile = mobile.replace(/\D/g, '');
-        if (cleanMobile.length !== 10 || !email.includes('@')) return false;
-
         const newUser: UserProfile = {
           id: `cust-${Date.now()}`,
-          name,
+          name: name || 'Valued Customer',
           mobile: cleanMobile,
-          email,
+          email: email || 'customer@loomlore.in',
           role: 'customer',
-          addresses: []
+          addresses: [
+            {
+              id: `addr-${Date.now()}`,
+              name: name || 'Valued Customer',
+              mobile: cleanMobile || '9876543210',
+              pincode: '110001',
+              addressLine: 'Flat 402, Royal Residency, Connaught Place',
+              city: 'New Delhi',
+              state: 'Delhi',
+              isDefault: true
+            }
+          ],
+          orders: [],
+          purchasedProductIds: []
         };
-
         set({ user: newUser, isLoggedIn: true, isLoginModalOpen: false });
         return true;
       },
 
-      registerSeller: (sellerData) => {
-        const id = `sel-req-${Date.now()}`;
-        const registration: SellerRegistration = {
-          ...sellerData,
-          id,
+      registerSeller: (data) => {
+        const newSeller: SellerRegistration = {
+          ...data,
+          id: `sel-req-${Date.now()}`,
           status: 'pending',
-          submittedAt: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
-        };
-
-        const sellerUser: UserProfile = {
-          id: `user-sel-${Date.now()}`,
-          name: sellerData.ownerName,
-          mobile: sellerData.mobile,
-          email: sellerData.email,
-          role: 'seller',
-          sellerStatus: 'pending',
-          sellerDetails: registration,
-          addresses: []
+          submittedAt: new Date().toLocaleDateString('en-IN')
         };
 
         set((state) => ({
-          pendingSellers: [registration, ...state.pendingSellers],
-          user: sellerUser,
-          isLoggedIn: true,
-          isLoginModalOpen: false
+          pendingSellers: [newSeller, ...state.pendingSellers]
         }));
 
-        return registration;
+        return newSeller;
       },
 
       approveSeller: (sellerId) => {
         set((state) => {
-          const updatedSellers = state.pendingSellers.map((s) =>
+          const sellerReq = state.pendingSellers.find((s) => s.id === sellerId);
+          const updatedPending = state.pendingSellers.map((s) =>
             s.id === sellerId ? { ...s, status: 'approved' as SellerStatus } : s
           );
-          const currentIsThisSeller = state.user?.sellerDetails?.id === sellerId;
-          return {
-            pendingSellers: updatedSellers,
-            user: currentIsThisSeller && state.user
-              ? {
-                  ...state.user,
-                  sellerStatus: 'approved',
-                  sellerDetails: state.user.sellerDetails ? { ...state.user.sellerDetails, status: 'approved' } : undefined
-                }
-              : state.user
-          };
+
+          if (sellerReq && state.user && state.user.email === sellerReq.email) {
+            return {
+              pendingSellers: updatedPending,
+              user: {
+                ...state.user,
+                role: 'seller',
+                sellerStatus: 'approved',
+                sellerDetails: { ...sellerReq, status: 'approved' }
+              }
+            };
+          }
+
+          return { pendingSellers: updatedPending };
         });
       },
 
@@ -178,24 +202,8 @@ export const useAuthStore = create<AuthState>()(
         }));
       },
 
-      sendOTP: (mobile) => {
-        const clean = mobile.replace(/\D/g, '');
-        return clean.length === 10;
-      },
-
-      verifyOTP: (mobile, otp) => {
-        const cleanMobile = mobile.replace(/\D/g, '');
-        const cleanOtp = otp.trim();
-        if (cleanOtp === DEMO_OTP || cleanOtp === '654321') {
-          return get().loginWithMobile(cleanMobile);
-        }
-        return false;
-      },
-
       loginWithMobile: (mobile, email) => {
         const cleanMobile = mobile.replace(/\D/g, '');
-        
-        // Retain existing user profile if mobile matches
         const currentUser = get().user;
         if (currentUser && currentUser.mobile === cleanMobile) {
           set({ isLoggedIn: true, isLoginModalOpen: false });
@@ -208,83 +216,12 @@ export const useAuthStore = create<AuthState>()(
           mobile: cleanMobile,
           email: email || 'customer@loomlore.in',
           role: 'customer',
-          addresses: []
+          addresses: [],
+          orders: [],
+          purchasedProductIds: []
         };
         set({ user: newUser, isLoggedIn: true, isLoginModalOpen: false });
         return true;
-      },
-
-      loginAsDemoCustomer: () => {
-        set({
-          user: {
-            id: 'usr-demo-01',
-            name: 'Rohan Sharma',
-            mobile: DEMO_CUSTOMER_MOBILE,
-            email: 'rohan.sharma@example.com',
-            role: 'customer',
-            addresses: [
-              {
-                id: 'addr-01',
-                name: 'Rohan Sharma',
-                mobile: DEMO_CUSTOMER_MOBILE,
-                pincode: '110001',
-                addressLine: 'Flat 402, Royal Residency, Connaught Place',
-                city: 'New Delhi',
-                state: 'Delhi',
-                isDefault: true
-              }
-            ]
-          },
-          isLoggedIn: true,
-          isLoginModalOpen: false
-        });
-      },
-
-      loginAsDemoSeller: () => {
-        set({
-          user: {
-            id: 'usr-seller-01',
-            name: 'Bhopa Handloom Cooperative',
-            mobile: DEMO_SELLER_MOBILE,
-            email: 'artisan@bhopacoop.in',
-            role: 'seller',
-            sellerStatus: 'approved',
-            sellerDetails: {
-              id: 'sel-req-101',
-              firmName: 'Bhopa Handloom Cooperative',
-              ownerName: 'Sunita Devi Bhopa',
-              mobile: DEMO_SELLER_MOBILE,
-              email: 'artisan@bhopacoop.in',
-              state: 'Rajasthan',
-              city: 'Jodhpur',
-              panNumber: 'BHPPD1234F',
-              gstinNumber: '08BHPPD1234F1Z5',
-              bankAccount: '98765432101234',
-              ifscCode: 'SBIN0001234',
-              craftSpecialty: 'Bandhani Rai Bandhej Georgette Sarees',
-              status: 'approved',
-              submittedAt: 'Verified 2026'
-            },
-            addresses: []
-          },
-          isLoggedIn: true,
-          isLoginModalOpen: false
-        });
-      },
-
-      loginAsDemoAdmin: () => {
-        set({
-          user: {
-            id: 'usr-admin-01',
-            name: 'Loomlore Review Team (Admin)',
-            mobile: DEMO_ADMIN_MOBILE,
-            email: 'audit@loomlore.in',
-            role: 'admin',
-            addresses: []
-          },
-          isLoggedIn: true,
-          isLoginModalOpen: false
-        });
       },
 
       logout: () => set({ user: null, isLoggedIn: false, isLoginModalOpen: false }),
@@ -298,25 +235,91 @@ export const useAuthStore = create<AuthState>()(
       addAddress: (newAddr) => {
         set((state) => {
           if (!state.user) return state;
-          const id = `addr-${Date.now()}`;
+          const created: UserAddress = {
+            ...newAddr,
+            id: `addr-${Date.now()}`,
+            isDefault: state.user.addresses.length === 0 ? true : newAddr.isDefault
+          };
+
+          let updatedAddresses = [...state.user.addresses];
+          if (created.isDefault) {
+            updatedAddresses = updatedAddresses.map((a) => ({ ...a, isDefault: false }));
+          }
+          updatedAddresses.push(created);
+
+          return {
+            user: { ...state.user, addresses: updatedAddresses }
+          };
+        });
+      },
+
+      deleteAddress: (addressId) => {
+        set((state) => {
+          if (!state.user) return state;
+          const filtered = state.user.addresses.filter((a) => a.id !== addressId);
+          if (filtered.length > 0 && !filtered.some((a) => a.isDefault)) {
+            filtered[0].isDefault = true;
+          }
+          return {
+            user: { ...state.user, addresses: filtered }
+          };
+        });
+      },
+
+      setDefaultAddress: (addressId) => {
+        set((state) => {
+          if (!state.user) return state;
+          const updated = state.user.addresses.map((a) => ({
+            ...a,
+            isDefault: a.id === addressId
+          }));
+          return {
+            user: { ...state.user, addresses: updated }
+          };
+        });
+      },
+
+      addOrder: (orderData) => {
+        const newOrder: UserOrder = {
+          id: `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
+          trackingId: `LL-TRACK-${Math.floor(1000 + Math.random() * 9000)}`,
+          courierPartner: 'BlueDart Express (Handloom Priority)',
+          date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+          totalINR: orderData.totalINR,
+          paymentMethod: orderData.paymentMethod,
+          status: 'Processing',
+          estimatedDelivery: '3–5 Business Days',
+          shippingAddress: orderData.shippingAddress,
+          items: orderData.items
+        };
+
+        set((state) => {
+          if (!state.user) return state;
+          const purchasedIds = new Set([
+            ...(state.user.purchasedProductIds || []),
+            ...orderData.items.map((i) => i.productId)
+          ]);
           return {
             user: {
               ...state.user,
-              addresses: [...state.user.addresses, { ...newAddr, id }]
+              orders: [newOrder, ...(state.user.orders || [])],
+              purchasedProductIds: Array.from(purchasedIds)
             }
           };
         });
+
+        return newOrder;
       },
 
       recordPurchasedProducts: (productIds) => {
         set((state) => {
           if (!state.user) return state;
-          const current = state.user.purchasedProductIds || [];
-          const updated = Array.from(new Set([...current, ...productIds]));
+          const existing = new Set(state.user.purchasedProductIds || []);
+          productIds.forEach((id) => existing.add(id));
           return {
             user: {
               ...state.user,
-              purchasedProductIds: updated
+              purchasedProductIds: Array.from(existing)
             }
           };
         });

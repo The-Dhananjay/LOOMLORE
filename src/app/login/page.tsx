@@ -177,9 +177,19 @@ export default function LoginPage() {
       craftSpecialty
     });
 
+    const approvalUrl = typeof window !== 'undefined' ? `${window.location.origin}/seller/approve?id=${reg.id}` : `/seller/approve?id=${reg.id}`;
+    const mailtoLink = `mailto:yadav98dhananjay@gmail.com?subject=${encodeURIComponent(`Approval Needed: New Artisan Seller Firm (${reg.firmName})`)}&body=${encodeURIComponent(
+      `Respected Admin,\n\nA new weaver artisan firm has submitted credentials for verification on Loomlore:\n\n• Firm Name: ${reg.firmName}\n• Owner Name: ${reg.ownerName}\n• Mobile: +91 ${reg.mobile}\n• Email: ${reg.email}\n• PAN: ${reg.panNumber}\n• GSTIN: ${reg.gstinNumber}\n• Specialty: ${reg.craftSpecialty}\n\nTo approve this seller firm, click the official approval link below:\n${approvalUrl}\n\nThank you,\nLoomlore Heritage Architecture`
+    )}`;
+
     setPendingNotice(
-      `Registration Submitted for "${reg.firmName}". Our website audit team will review your PAN (${reg.panNumber}) and firm credentials within 24–48 hours. A verification notification has been sent to ${reg.email}.`
+      `Registration Submitted for "${reg.firmName}". An official approval email request has been generated for Admin (yadav98dhananjay@gmail.com). Clicking the approval link in the email approves the firm.`
     );
+
+    // Automatically trigger mailto link
+    if (typeof window !== 'undefined') {
+      window.location.href = mailtoLink;
+    }
   }
 
   return (

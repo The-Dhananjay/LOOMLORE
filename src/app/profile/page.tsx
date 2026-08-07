@@ -15,13 +15,13 @@ export default function ProfilePage() {
       <div className="mx-auto w-full max-w-4xl px-6 py-40 text-center font-sans bg-[#faeee7] text-[#33272a]">
         <LoginModal />
         <h1 className="display-h text-4xl text-[#33272a]">Buyer Account Portal</h1>
-        <p className="mt-3 text-sm text-[#594a4e]">Please sign in with your mobile number &amp; email to view your customer orders and addresses.</p>
+        <p className="mt-3 text-sm text-[#594a4e]">Please sign in with your email &amp; password to view your account orders and addresses.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link href="/login" className="wax-button text-xs px-8 py-3">
             Go to Dedicated Login Page →
           </Link>
           <button onClick={openLoginModal} className="ghost-button text-xs px-6 py-3">
-            Quick Mobile Sign In
+            Quick Sign In
           </button>
         </div>
       </div>
@@ -51,10 +51,39 @@ export default function ProfilePage() {
     );
   }
 
-  // Filter orders matching user mobile
-  const userOrders = sellerOrders.filter(
-    (o) => o.customerMobile.replace(/\D/g, '') === user.mobile.replace(/\D/g, '')
-  );
+  const accountOrders = user.orders && user.orders.length > 0
+    ? user.orders
+    : sellerOrders
+        .filter((o) => o.customerMobile.replace(/\D/g, '') === user.mobile.replace(/\D/g, ''))
+        .map((sOrder) => ({
+          id: sOrder.orderId,
+          trackingId: `LL-TRACK-${Math.floor(1000 + Math.random() * 9000)}`,
+          courierPartner: 'BlueDart Express (Handloom Priority)',
+          date: sOrder.orderedAt,
+          totalINR: sOrder.totalAmountINR,
+          paymentMethod: sOrder.paymentMethod,
+          status: sOrder.status === 'Dispatched' ? 'In Transit' : sOrder.status as any,
+          estimatedDelivery: '3–5 Business Days',
+          shippingAddress: {
+            id: 'addr-01',
+            name: sOrder.customerName,
+            mobile: sOrder.customerMobile,
+            pincode: '110001',
+            addressLine: sOrder.shippingAddress,
+            city: 'New Delhi',
+            state: 'Delhi',
+            isDefault: true
+          },
+          items: sOrder.items.map((it) => ({
+            id: it.productId,
+            productId: it.productId,
+            productName: it.productName,
+            image: it.image,
+            priceINR: it.priceINR,
+            quantity: it.quantity,
+            size: 'Free Size'
+          }))
+        }));
 
   return (
     <div className="mx-auto w-full max-w-7xl px-6 py-32 font-sans bg-[#faeee7] text-[#33272a]">
@@ -65,11 +94,14 @@ export default function ProfilePage() {
           <span className="label-eyebrow text-xs">Verified Customer Account</span>
           <h1 className="display-h mt-2 text-4xl text-[#33272a] sm:text-5xl">Namaste, {user.name}</h1>
           <p className="mt-1 text-xs text-[#594a4e]">
-            Mobile: <strong className="font-mono text-[#33272a]">+91 {user.mobile}</strong> · Email: {user.email}
+            Account Email: <strong className="text-[#33272a]">{user.email}</strong> · Mobile: +91 {user.mobile || '9876543210'}
           </p>
         </div>
 
         <div className="flex gap-3">
+          <Link href="/address" className="wax-button text-xs px-5 py-2.5">
+            Manage Shipping Addresses →
+          </Link>
           <button onClick={logout} className="ghost-button text-xs px-5 py-2.5">
             Sign Out
           </button>
@@ -80,11 +112,16 @@ export default function ProfilePage() {
         {/* Left Column: Saved Addresses */}
         <div className="space-y-6">
           <div className="rounded-3xl border border-[#33272a]/15 bg-[#fffffe] p-6 shadow-xs">
-            <h2 className="display-h text-2xl text-[#33272a]">Saved Shipping Addresses</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="display-h text-2xl text-[#33272a]">Saved Addresses</h2>
+              <Link href="/address" className="text-[10px] uppercase font-bold text-[#ff8ba7] hover:underline">
+                Manage All →
+              </Link>
+            </div>
             <p className="mt-1 text-xs text-[#594a4e]">Verified delivery locations for Indian orders.</p>
 
             <div className="mt-6 space-y-4">
-              {user.addresses.length > 0 ? (
+              {user.addresses && user.addresses.length > 0 ? (
                 user.addresses.map((addr) => (
                   <div key={addr.id} className="royal-card p-4">
                     <div className="flex items-center justify-between">
@@ -102,54 +139,94 @@ export default function ProfilePage() {
                   </div>
                 ))
               ) : (
-                <p className="text-xs text-[#594a4e]">No saved addresses yet. Address will be saved upon checkout.</p>
+                <div className="text-xs text-[#594a4e] space-y-2">
+                  <p>No saved addresses yet.</p>
+                  <Link href="/address" className="wax-button inline-block text-[10px] px-4 py-2">
+                    + Add New Address
+                  </Link>
+                </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Right 2 Columns: Order History */}
+        {/* Right 2 Columns: Order History & Tracking System */}
         <div className="lg:col-span-2 space-y-6">
           <div className="rounded-3xl border border-[#33272a]/15 bg-[#fffffe] p-6 shadow-xs">
-            <h2 className="display-h text-2xl text-[#33272a]">Your Orders &amp; Trackings ({userOrders.length})</h2>
-            <p className="mt-1 text-xs text-[#594a4e]">Live status of your traditional handwoven clothing purchases.</p>
+            <h2 className="display-h text-2xl text-[#33272a]">Order Tracking &amp; History ({accountOrders.length})</h2>
+            <p className="mt-1 text-xs text-[#594a4e]">Real-time tracking status of your handwoven clothing purchases.</p>
 
-            {userOrders.length > 0 ? (
+            {accountOrders.length > 0 ? (
               <div className="mt-6 space-y-6">
-                {userOrders.map((ord) => (
-                  <div key={ord.orderId} className="rounded-2xl border border-[#33272a]/15 bg-[#faeee7] p-5">
-                    <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#33272a]/10 pb-3 text-xs">
+                {accountOrders.map((ord) => (
+                  <div key={ord.id} className="rounded-2xl border border-[#33272a]/15 bg-[#faeee7] p-6 space-y-4">
+                    {/* Header */}
+                    <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#33272a]/10 pb-4 text-xs">
                       <div>
                         <span className="text-[10px] uppercase tracking-widest text-[#ff8ba7] font-bold">Order ID</span>
-                        <p className="font-mono text-[#33272a] font-bold">{ord.orderId}</p>
+                        <p className="font-mono text-[#33272a] font-bold text-sm">{ord.id}</p>
                       </div>
                       <div>
-                        <span className="text-[10px] uppercase tracking-widest text-[#594a4e] font-semibold">Date</span>
-                        <p className="text-[#33272a]">{ord.orderedAt}</p>
+                        <span className="text-[10px] uppercase tracking-widest text-[#594a4e] font-semibold">Tracking Number</span>
+                        <p className="font-mono text-[#33272a] font-bold text-sm">{ord.trackingId}</p>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase tracking-widest text-[#594a4e] font-semibold">Courier</span>
+                        <p className="text-[#33272a] font-semibold">{ord.courierPartner}</p>
                       </div>
                       <div>
                         <span className="text-[10px] uppercase tracking-widest text-[#594a4e] font-semibold">Status</span>
-                        <span className="ml-2 rounded-full bg-[#ff8ba7] px-3 py-0.5 text-[10px] uppercase tracking-wider text-[#33272a] font-bold">
+                        <span className="ml-2 rounded-full bg-[#ff8ba7] px-3 py-1 text-[10px] uppercase tracking-wider text-[#33272a] font-bold">
                           {ord.status}
                         </span>
                       </div>
                     </div>
 
-                    <div className="mt-4 space-y-3">
+                    {/* Tracking Timeline Bar */}
+                    <div className="rounded-xl border border-[#33272a]/10 bg-[#fffffe] p-4">
+                      <div className="flex justify-between text-[10px] uppercase tracking-wider font-bold text-[#594a4e]">
+                        <span className={ord.status === 'Processing' || ord.status === 'In Transit' || ord.status === 'Delivered' ? 'text-[#ff8ba7]' : ''}>1. Order Placed</span>
+                        <span className={ord.status === 'In Transit' || ord.status === 'Delivered' ? 'text-[#ff8ba7]' : ''}>2. Handwoven &amp; Dispatched</span>
+                        <span className={ord.status === 'Delivered' ? 'text-[#ff8ba7]' : ''}>3. Out for Delivery</span>
+                        <span className={ord.status === 'Delivered' ? 'text-emerald-700' : ''}>4. Delivered</span>
+                      </div>
+                      <div className="mt-2 h-2 w-full rounded-full bg-[#faeee7] overflow-hidden">
+                        <div
+                          className="h-full bg-[#ff8ba7] transition-all duration-500"
+                          style={{
+                            width:
+                              ord.status === 'Processing'
+                                ? '25%'
+                                : ord.status === 'In Transit'
+                                ? '65%'
+                                : ord.status === 'Out for Delivery'
+                                ? '85%'
+                                : '100%'
+                          }}
+                        />
+                      </div>
+                      <p className="mt-2 text-[11px] text-[#594a4e] font-medium">
+                        Estimated Delivery: <strong className="text-[#33272a]">{ord.estimatedDelivery}</strong>
+                      </p>
+                    </div>
+
+                    {/* Order Items */}
+                    <div className="space-y-3">
                       {ord.items.map((item, idx) => (
-                        <div key={idx} className="flex items-center gap-4">
-                          <img src={item.image} alt={item.productName} className="h-14 w-12 rounded-xl object-cover border border-[#33272a]/15 bg-[#fffffe]" />
+                        <div key={idx} className="flex items-center gap-4 rounded-xl bg-[#fffffe] p-3 border border-[#33272a]/10">
+                          <img src={item.image} alt={item.productName} className="h-16 w-14 rounded-xl object-cover border border-[#33272a]/15" />
                           <div className="flex-1">
                             <h4 className="display-h text-lg text-[#33272a]">{item.productName}</h4>
-                            <p className="text-xs text-[#594a4e]">Qty: {item.quantity} · {formatINR(item.priceINR)} each</p>
+                            <p className="text-xs text-[#594a4e]">Size: {item.size} · Qty: {item.quantity} · {formatINR(item.priceINR)} each</p>
                           </div>
                         </div>
                       ))}
                     </div>
 
-                    <div className="mt-4 flex items-center justify-between border-t border-[#33272a]/10 pt-3 text-xs">
-                      <span className="text-[#594a4e]">Payment: {ord.paymentMethod}</span>
-                      <span className="display-h text-xl font-bold text-[#33272a]">Total Paid: {formatINR(ord.totalAmountINR)}</span>
+                    {/* Footer */}
+                    <div className="flex flex-wrap items-center justify-between border-t border-[#33272a]/10 pt-3 text-xs">
+                      <span className="text-[#594a4e]">Payment Method: {ord.paymentMethod}</span>
+                      <span className="display-h text-2xl font-bold text-[#33272a]">Total: {formatINR(ord.totalINR)}</span>
                     </div>
                   </div>
                 ))}
