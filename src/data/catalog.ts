@@ -159,7 +159,7 @@ export const products: Product[] = [
     artisan: 'Rangrez Guild Jaipur',
     rating: 4.8,
     reviewCount: 88,
-    image: '/products/bandhani-saree.jpg',
+    image: '/products/leheriya-saree.jpg',
     badge: 'Women Teej Special',
     swatch: '#ec4899',
     shipsFromCity: 'Jaipur'
@@ -317,7 +317,7 @@ export const products: Product[] = [
     artisan: 'Kutch Craft Guild',
     rating: 4.8,
     reviewCount: 64,
-    image: '/products/bandhani-saree.jpg',
+    image: '/products/navratri-kediyu-dhoti.jpg',
     badge: 'Men Festive',
     swatch: '#f43f5e',
     shipsFromCity: 'Bhuj'
