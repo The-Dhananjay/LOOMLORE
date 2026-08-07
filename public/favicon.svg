@@ -1,1 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><radialGradient id="g" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="#f1d68a"/><stop offset="50%" stop-color="#caa14a"/><stop offset="100%" stop-color="#7a1f2b"/></radialGradient></defs><rect width="64" height="64" rx="14" fill="#0e0908"/><circle cx="32" cy="32" r="20" fill="url(#g)"/><text x="32" y="40" font-family="Georgia,serif" font-size="22" font-weight="700" text-anchor="middle" fill="#0e0908">L</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <rect width="100" height="100" rx="28" fill="#faeee7" />
+  <rect width="92" height="92" x="4" y="4" rx="24" fill="url(#bgGrad)" stroke="#ff8ba7" stroke-width="3" />
+  
+  {/* Outer Ring */}
+  <circle cx="50" cy="50" r="40" stroke="#33272a" stroke-width="3" opacity="0.2" />
+  <circle cx="50" cy="50" r="40" stroke="#ff8ba7" stroke-width="3" stroke-dasharray="10 6" />
+  
+  {/* Lotus Motif */}
+  <path d="M50 16 C55 32 73 35 76 51 C79 67 63 77 50 79 C37 77 21 67 24 51 C27 35 45 32 50 16 Z" fill="#33272a" opacity="0.1" />
+  <path d="M50 22 Q60 45 74 54 Q50 68 50 80 Q50 68 26 54 Q40 45 50 22 Z" fill="url(#logoGrad)" />
+  
+  {/* Interlocking L Accent */}
+  <path d="M38 34 V68 H62" stroke="#fffffe" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M38 34 V68 H62" stroke="#33272a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fffffe" />
+      <stop offset="0.6" stop-color="#ffc6c7" />
+      <stop offset="1" stop-color="#faeee7" />
+    </linearGradient>
+    <linearGradient id="logoGrad" x1="26" y1="22" x2="74" y2="80" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff8ba7" />
+      <stop offset="0.7" stop-color="#ffc6c7" />
+      <stop offset="1" stop-color="#33272a" />
+    </linearGradient>
+  </defs>
+</svg>
