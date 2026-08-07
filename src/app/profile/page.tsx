@@ -5,10 +5,17 @@ import { useAuthStore } from '@/lib/auth';
 import { useSellerStore } from '@/lib/seller';
 import { formatINR } from '@/lib/india';
 import { LoginModal } from '@/components/LoginModal';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function ProfilePage() {
   const { user, isLoggedIn, logout, openLoginModal } = useAuthStore();
+  const { logout: fbLogout } = useAuth();
   const { sellerOrders } = useSellerStore();
+
+  const handleNavToLogin = async () => {
+    await fbLogout();
+    logout();
+  };
 
   if (!isLoggedIn || !user) {
     return (
@@ -17,7 +24,7 @@ export default function ProfilePage() {
         <h1 className="display-h text-4xl text-[#33272a]">Buyer Account Portal</h1>
         <p className="mt-3 text-sm text-[#594a4e]">Please sign in with your email &amp; password to view your account orders and addresses.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Link href="/login" className="wax-button text-xs px-8 py-3">
+          <Link href="/login" onClick={handleNavToLogin} className="wax-button text-xs px-8 py-3">
             Go to Dedicated Login Page →
           </Link>
           <button onClick={openLoginModal} className="ghost-button text-xs px-6 py-3">

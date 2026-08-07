@@ -16,15 +16,16 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (fbLoading) return;
 
-    const authenticated = fbUser !== null || isLoggedIn;
+    // A user is strictly authenticated only if fbUser exists OR storeUser exists with isLoggedIn
+    const authenticated = fbUser !== null || (isLoggedIn && storeUser !== null);
 
     // 1. If accessing protected routes while unauthenticated, redirect to /login
     if (PROTECTED_ROUTES.some((route) => pathname.startsWith(route)) && !authenticated) {
       router.replace('/login');
     }
 
-    // 2. If logged in and visiting /login, redirect away to /profile or /seller
-    if (pathname === '/login' && authenticated) {
+    // 2. Only redirect away from /login if fbUser is actively signed in & email verified
+    if (pathname === '/login' && fbUser !== null && fbUser.emailVerified) {
       if (storeUser?.role === 'seller') {
         router.replace('/seller');
       } else {
