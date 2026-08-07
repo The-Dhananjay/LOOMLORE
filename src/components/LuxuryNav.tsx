@@ -106,11 +106,10 @@ export function LuxuryNav() {
               className="flex items-center gap-2 rounded-full border border-[#33272a]/20 bg-[#fffffe] px-4 py-1.5 text-xs uppercase tracking-[0.18em] text-[#33272a] font-semibold transition hover:border-[#ff8ba7] hover:bg-[#fffffe] shadow-sm"
               aria-label="Search"
             >
-              <svg className="h-3.5 w-3.5 text-[#ff8ba7]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 0114 0z" />
+              <svg className="h-4 w-4 shrink-0 text-[#ff8ba7]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
               </svg>
               <span>Search</span>
-              <kbd className="ml-1 rounded border border-[#33272a]/15 bg-[#faeee7] px-1.5 py-0.5 text-[9px] text-[#33272a]">⌘K</kbd>
             </button>
 
             {/* 1. BAG BUTTON: Visible ONLY when Logged In as Buyer (Customer) */}
@@ -197,15 +196,12 @@ export function LuxuryNav() {
                     setOpen(false);
                     setSearchOpen(true);
                   }}
-                  className="flex items-center justify-between w-full rounded-2xl border border-[#33272a]/15 bg-[#fffffe] px-4 py-3 text-xs text-[#594a4e] shadow-2xs hover:border-[#ff8ba7] transition"
+                  className="flex items-center gap-2.5 w-full rounded-2xl border border-[#33272a]/15 bg-[#fffffe] px-4 py-3 text-xs text-[#594a4e] shadow-2xs hover:border-[#ff8ba7] transition"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <svg className="h-4 w-4 text-[#ff8ba7]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 0114 0z" />
-                    </svg>
-                    <span>Search Banarasi, Sherwani, Kurta, Kanjeevaram...</span>
-                  </div>
-                  <kbd className="rounded border border-[#33272a]/15 bg-[#faeee7] px-2 py-0.5 text-[9px] font-bold text-[#33272a]">⌘K</kbd>
+                  <svg className="h-4 w-4 shrink-0 text-[#ff8ba7]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                  </svg>
+                  <span>Search Banarasi, Sherwani, Kurta, Kanjeevaram...</span>
                 </button>
 
                 {/* Primary Section Links */}
