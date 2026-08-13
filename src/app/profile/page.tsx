@@ -6,7 +6,6 @@ import { useSellerStore } from '@/lib/seller';
 import { formatINR } from '@/lib/india';
 import { LoginModal } from '@/components/LoginModal';
 import { useAuth } from '@/hooks/useAuth';
-import { getSecurityLogs, getBrowserInfo, getOSInfo } from '@/lib/security';
 
 export default function ProfilePage() {
   const { user, isLoggedIn, logout, openLoginModal } = useAuthStore();
@@ -122,63 +121,6 @@ export default function ProfilePage() {
                   </Link>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Account Security & Active Device Audit Panel */}
-          <div className="rounded-3xl border border-[#33272a]/15 bg-[#fffffe] p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="display-h text-xl text-[#33272a]">Security &amp; Active Devices</h2>
-              <span className="rounded-full bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 text-[9px] uppercase tracking-wider text-emerald-900 font-bold">
-                ✓ TLS 1.3 Encrypted
-              </span>
-            </div>
-
-            <div className="rounded-2xl border border-[#33272a]/10 bg-[#faeee7] p-4 text-xs space-y-1.5">
-              <p className="font-bold text-[#33272a]">Current Active Session Device:</p>
-              <p className="text-[#594a4e] font-mono text-[11px]">
-                {typeof window !== 'undefined' ? `${getBrowserInfo()} (${getOSInfo()})` : 'Desktop Browser'}
-              </p>
-              <p className="text-[10px] text-emerald-800 font-semibold pt-1">
-                🔒 Security Protocol: OAuth 2.0 / Firebase Encrypted Auth
-              </p>
-            </div>
-
-            <div className="pt-2">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#33272a] mb-2">Recent Security Audit Events</h3>
-              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                {getSecurityLogs().length > 0 ? (
-                  getSecurityLogs().slice(0, 4).map((log) => (
-                    <div key={log.id} className="flex items-center justify-between rounded-xl bg-[#faeee7]/60 p-2.5 text-[11px]">
-                      <div>
-                        <span className="font-bold text-[#33272a]">{log.eventType.replace('_', ' ')}</span>
-                        <p className="text-[10px] text-[#594a4e] font-mono">{log.timestamp}</p>
-                      </div>
-                      <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${
-                        log.status === 'SUCCESS' ? 'bg-emerald-100 text-emerald-900' : 'bg-rose-100 text-rose-900'
-                      }`}>
-                        {log.status}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="rounded-xl bg-[#faeee7]/60 p-3 text-[11px] text-[#594a4e]">
-                    🔒 Authentication session verified cleanly. Zero suspicious activities logged.
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-[#33272a]/10 flex justify-end">
-              <button
-                onClick={() => {
-                  logout();
-                  handleNavToLogin();
-                }}
-                className="text-[10px] uppercase font-bold text-rose-700 hover:underline"
-              >
-                Log Out From All Active Devices →
-              </button>
             </div>
           </div>
         </div>
