@@ -1,0 +1,17 @@
+{
+  "name": "Loomlore — Heirlooms of India",
+  "short_name": "Loomlore",
+  "description": "Discover traditional Indian clothing from all 28 states — handwoven sarees, lehengas, sherwanis, anarkalis, and cashmere pashminas.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faeee7",
+  "theme_color": "#faeee7",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

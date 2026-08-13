@@ -36,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="min-h-screen text-[#33272a] bg-[#faeee7] antialiased font-serif" suppressHydrationWarning>
         <a
