@@ -5,6 +5,15 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/lib/auth';
+import {
+  sanitizeInput,
+  isValidEmail,
+  isValidIndianMobile,
+  isValidPAN,
+  isValidGSTIN,
+  checkRateLimit,
+  logSecurityEvent
+} from '@/lib/security';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -65,8 +74,10 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       await googleLogin();
+      logSecurityEvent('LOGIN_SUCCESS', 'google_user@loomlore.in');
       router.push('/profile');
     } catch (err: any) {
+      logSecurityEvent('LOGIN_FAILED', 'google_user@loomlore.in', 'WARNING');
       setErrorMsg(err.message || 'Google sign-in failed. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -79,8 +90,20 @@ export default function LoginPage() {
     setErrorMsg('');
     setSuccessMsg('');
 
-    if (!email.includes('@')) {
+    const cleanEmail = sanitizeInput(email);
+    const cleanPassword = sanitizeInput(password);
+
+    if (!isValidEmail(cleanEmail)) {
       setErrorMsg('Please enter a valid email address.');
+      return;
+    }
+
+    // Rate Limiting Check (Max 5 attempts per minute)
+    const rateCheck = checkRateLimit(`login_${cleanEmail}`, 5, 60000);
+    if (!rateCheck.allowed) {
+      const waitSeconds = Math.ceil(rateCheck.remainingMs / 1000);
+      logSecurityEvent('LOGIN_FAILED', cleanEmail, 'BLOCKED');
+      setErrorMsg(`Too many failed attempts. Security lock active for ${waitSeconds} seconds.`);
       return;
     }
 
@@ -88,9 +111,11 @@ export default function LoginPage() {
     if (authMode === 'forgot') {
       setIsSubmitting(true);
       try {
-        await sendPasswordReset(email);
-        setSuccessMsg(`Password reset link sent to ${email}. Check your email inbox.`);
+        await sendPasswordReset(cleanEmail);
+        logSecurityEvent('PASSWORD_RESET', cleanEmail);
+        setSuccessMsg(`Password reset link sent to ${cleanEmail}. Check your email inbox.`);
       } catch (err: any) {
+        logSecurityEvent('LOGIN_FAILED', cleanEmail, 'WARNING');
         setErrorMsg(err.message || 'Could not send password reset email.');
       } finally {
         setIsSubmitting(false);
@@ -98,7 +123,7 @@ export default function LoginPage() {
       return;
     }
 
-    if (password.length < 6) {
+    if (cleanPassword.length < 6) {
       setErrorMsg('Password must be at least 6 characters long.');
       return;
     }
@@ -108,9 +133,11 @@ export default function LoginPage() {
     // Register Mode
     if (authMode === 'register') {
       try {
-        await emailRegister(email, password, fullName || 'Valued Customer');
+        await emailRegister(cleanEmail, cleanPassword, sanitizeInput(fullName) || 'Valued Customer');
+        logSecurityEvent('LOGIN_SUCCESS', cleanEmail);
         router.push('/profile');
       } catch (err: any) {
+        logSecurityEvent('LOGIN_FAILED', cleanEmail, 'WARNING');
         setErrorMsg(err.message || 'Account registration failed.');
       } finally {
         setIsSubmitting(false);
@@ -121,9 +148,11 @@ export default function LoginPage() {
     // Login Mode
     if (authMode === 'login') {
       try {
-        await emailLogin(email, password);
+        await emailLogin(cleanEmail, cleanPassword);
+        logSecurityEvent('LOGIN_SUCCESS', cleanEmail);
         router.push('/profile');
       } catch (err: any) {
+        logSecurityEvent('LOGIN_FAILED', cleanEmail, 'WARNING');
         setErrorMsg(err.message || 'Incorrect email or password.');
       } finally {
         setIsSubmitting(false);
@@ -136,28 +165,34 @@ export default function LoginPage() {
     e.preventDefault();
     setErrorMsg('');
     const cleanMobile = sellerMobile.replace(/\D/g, '');
-    if (cleanMobile.length !== 10) {
-      setErrorMsg('Mobile number must be 10 digits.');
+    if (!isValidIndianMobile(cleanMobile)) {
+      setErrorMsg('Please enter a valid 10-digit Indian mobile number starting with 6-9.');
       return;
     }
-    if (panNumber.length < 10) {
-      setErrorMsg('Please enter a valid 10-character PAN number.');
+    if (!isValidPAN(panNumber)) {
+      setErrorMsg('Invalid PAN format. Please enter a valid 10-character PAN (e.g. ABCDE1234F).');
+      return;
+    }
+    if (!isValidGSTIN(gstinNumber)) {
+      setErrorMsg('Invalid GSTIN format. Please enter a valid 15-character GSTIN or "PENDING".');
       return;
     }
 
     const reg = registerSeller({
-      firmName,
-      ownerName,
+      firmName: sanitizeInput(firmName),
+      ownerName: sanitizeInput(ownerName),
       mobile: cleanMobile,
-      email: sellerEmail,
-      state: sellerState,
-      city: sellerCity,
-      panNumber: panNumber.toUpperCase(),
-      gstinNumber: gstinNumber.toUpperCase() || 'PENDING',
-      bankAccount,
-      ifscCode: ifscCode.toUpperCase(),
-      craftSpecialty
+      email: sanitizeInput(sellerEmail),
+      state: sanitizeInput(sellerState),
+      city: sanitizeInput(sellerCity),
+      panNumber: panNumber.toUpperCase().trim(),
+      gstinNumber: gstinNumber.toUpperCase().trim() || 'PENDING',
+      bankAccount: sanitizeInput(bankAccount),
+      ifscCode: ifscCode.toUpperCase().trim(),
+      craftSpecialty: sanitizeInput(craftSpecialty)
     });
+
+    logSecurityEvent('SELLER_REGISTRATION', sanitizeInput(sellerEmail));
 
     const approvalUrl = typeof window !== 'undefined' ? `${window.location.origin}/seller/approve?id=${reg.id}` : `/seller/approve?id=${reg.id}`;
     const mailtoLink = `mailto:yadav98dhananjay@gmail.com?subject=${encodeURIComponent(`Approval Needed: New Artisan Seller Firm (${reg.firmName})`)}&body=${encodeURIComponent(
