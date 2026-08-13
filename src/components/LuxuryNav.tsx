@@ -8,7 +8,6 @@ import { CartDrawer } from './CartDrawer';
 import { LoginModal } from './LoginModal';
 import { useCartStore } from '@/lib/cart';
 import { useAuthStore } from '@/lib/auth';
-import { useCurrencyStore, CURRENCIES, CurrencyCode } from '@/lib/currency';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ALL_SECTIONS = [
@@ -27,7 +26,6 @@ export function LuxuryNav() {
   const openCart = useCartStore((s) => s.openCart);
   const itemCount = useCartStore((s) => s.getItemCount());
   const { user, isLoggedIn, logout } = useAuthStore();
-  const { currency, setCurrency } = useCurrencyStore();
 
   useEffect(() => {
     setMounted(true);
@@ -106,22 +104,6 @@ export function LuxuryNav() {
 
           {/* Right Column: Search, Bag (Left of Profile), Profile (Far Right) */}
           <div className="hidden items-center justify-end gap-3.5 md:flex">
-            {/* Global Multi-Currency Switcher */}
-            {mounted && (
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
-                className="rounded-full border border-[#33272a]/20 bg-[#fffffe] px-3 py-1.5 text-xs font-bold text-[#33272a] shadow-xs outline-none cursor-pointer hover:border-[#ff8ba7]"
-                aria-label="Select Currency"
-              >
-                {Object.values(CURRENCIES).map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.symbol} {c.code}
-                  </option>
-                ))}
-              </select>
-            )}
-
             <button
               onClick={() => setSearchOpen(true)}
               className="flex items-center gap-2 rounded-full border border-[#33272a]/20 bg-[#fffffe] px-4 py-1.5 text-xs uppercase tracking-[0.18em] text-[#33272a] font-semibold transition hover:border-[#ff8ba7] hover:bg-[#fffffe] shadow-sm"
