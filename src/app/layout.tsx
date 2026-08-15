@@ -19,7 +19,6 @@ export const metadata: Metadata = {
 
 import { AuthProvider } from '@/context/AuthContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { SmoothScrollProvider } from '@/components/SmoothScrollProvider';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -46,15 +45,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to content
         </a>
-        <SmoothScrollProvider>
-          <AuthProvider>
-            <ProtectedRoute>
-              <StateTheme />
-              <LuxuryNav />
-              <main id="main">{children}</main>
-            </ProtectedRoute>
-          </AuthProvider>
-        </SmoothScrollProvider>
+        <AuthProvider>
+          <ProtectedRoute>
+            <StateTheme />
+            <LuxuryNav />
+            <main id="main">{children}</main>
+          </ProtectedRoute>
+        </AuthProvider>
       </body>
     </html>
   );

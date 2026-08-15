@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { ProductCard } from '@/components/ProductCard';
 import { products } from '@/data/catalog';
-import { ScrollCanvas } from '@/components/3d/ScrollCanvas';
 
 const featured = [
   products[0], // Bandhani Saree
@@ -25,8 +24,7 @@ export default function HomePage() {
     <div className="bg-[#faeee7] text-[#33272a] font-sans">
       {/* Clean, High-Fashion Hero Section */}
       <section className="relative isolate overflow-hidden border-b border-[#33272a]/15 bg-[#faeee7] px-6 py-28 lg:px-10 lg:py-36">
-        <ScrollCanvas />
-        <div className="relative z-20 mx-auto w-full max-w-7xl">
+        <div className="mx-auto w-full max-w-7xl">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             
             {/* Left Column: Editorial Headline & Value Props */}
