@@ -67,6 +67,28 @@ export default function LoginPage() {
     }
   }, [fbUser, fbLoading, isLoggedIn, router]);
 
+  function formatAuthError(err: any): string {
+    const code = err?.code || '';
+    const msg = err?.message || '';
+
+    if (code.includes('unauthorized-domain') || msg.includes('unauthorized-domain')) {
+      return 'Google Sign-In is restricted to authorized domains in Firebase Console. Please sign in with your Email & Password below, or add your current domain under Firebase Console → Auth → Settings → Authorized Domains.';
+    }
+    if (code.includes('popup-closed-by-user') || msg.includes('popup-closed')) {
+      return 'Google Sign-In popup was closed before completing authentication.';
+    }
+    if (code.includes('wrong-password') || code.includes('user-not-found') || code.includes('invalid-credential')) {
+      return 'Incorrect email address or password. Please check your credentials.';
+    }
+    if (code.includes('email-already-in-use')) {
+      return 'An account with this email address already exists. Please sign in instead.';
+    }
+    if (code.includes('too-many-requests')) {
+      return 'Too many login attempts. Please wait a moment and try again.';
+    }
+    return msg || 'Authentication failed. Please try again.';
+  }
+
   // Google 1-Click Login
   async function handleGoogleSignIn() {
     setErrorMsg('');
@@ -78,7 +100,7 @@ export default function LoginPage() {
       router.push('/profile');
     } catch (err: any) {
       logSecurityEvent('LOGIN_FAILED', 'google_user@loomlore.in', 'WARNING');
-      setErrorMsg(err.message || 'Google sign-in failed. Please try again.');
+      setErrorMsg(formatAuthError(err));
     } finally {
       setIsSubmitting(false);
     }
@@ -116,7 +138,7 @@ export default function LoginPage() {
         setSuccessMsg(`Password reset link sent to ${cleanEmail}. Check your email inbox.`);
       } catch (err: any) {
         logSecurityEvent('LOGIN_FAILED', cleanEmail, 'WARNING');
-        setErrorMsg(err.message || 'Could not send password reset email.');
+        setErrorMsg(formatAuthError(err));
       } finally {
         setIsSubmitting(false);
       }
@@ -138,7 +160,7 @@ export default function LoginPage() {
         router.push('/profile');
       } catch (err: any) {
         logSecurityEvent('LOGIN_FAILED', cleanEmail, 'WARNING');
-        setErrorMsg(err.message || 'Account registration failed.');
+        setErrorMsg(formatAuthError(err));
       } finally {
         setIsSubmitting(false);
       }
@@ -153,7 +175,7 @@ export default function LoginPage() {
         router.push('/profile');
       } catch (err: any) {
         logSecurityEvent('LOGIN_FAILED', cleanEmail, 'WARNING');
-        setErrorMsg(err.message || 'Incorrect email or password.');
+        setErrorMsg(formatAuthError(err));
       } finally {
         setIsSubmitting(false);
       }
