@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { STATES, stateById, type StateId } from '@/data/india';
 import { products } from '@/data/catalog';
 import { ProductCard } from '@/components/ProductCard';
+import { StateProductsGrid } from '@/components/StateProductsGrid';
 import { formatINR, splitGST, deliveryEtaDays, INDIAN_PAYMENTS } from '@/lib/india';
 
 export default function StatePage({ params }: { params: { id: string } }) {
@@ -129,17 +130,17 @@ export default function StatePage({ params }: { params: { id: string } }) {
         </div>
       </section>
 
-      {/* STRICT REGIONAL GARMENTS GRID SECTION (ONLY GARMENTS FROM THIS STATE) */}
+      {/* 3 STATE OPTIONS GRID SECTION (1. CLOTHES, 2. JEWELRY, 3. FULL COMBOS) */}
       <section className="border-t border-[#33272a]/15 bg-[#fffffe] px-6 py-20 lg:px-10 lg:py-28">
-        <div className="mx-auto w-full max-w-7xl">
+        <div className="mx-auto w-full max-w-7xl space-y-8">
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div>
-              <p className="label-eyebrow text-xs">Handloom &amp; Heritage Archive</p>
+              <p className="label-eyebrow text-xs">State Options &amp; Combos</p>
               <h2 className="display-h mt-2 text-4xl text-[#33272a] sm:text-5xl">
-                All Traditional Clothing &amp; Jewelry of {state.name}.
+                3 Options of {state.name}: Clothes, Jewelry &amp; Royal Combos.
               </h2>
               <p className="mt-2 text-sm text-[#594a4e] max-w-2xl">
-                Handwoven traditional wear for Women &amp; Men and authentic regional jewelry from registered {state.name} artisan cooperatives.
+                Choose between traditional garments, authentic state ornaments, or complete royal heritage combo sets!
               </p>
             </div>
             <Link href="/catalog" className="ghost-button text-xs">
@@ -147,12 +148,8 @@ export default function StatePage({ params }: { params: { id: string } }) {
             </Link>
           </div>
 
-          {/* Strictly Filtered State Product Grid */}
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {stateProducts.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
+          {/* Interactive 3-Option Tabbed Product Grid */}
+          <StateProductsGrid stateName={state.name} products={stateProducts} />
         </div>
       </section>
 
