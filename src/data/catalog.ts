@@ -1200,7 +1200,7 @@ export const products: Product[] = [
     artisan: 'Jaipur Royal Guild',
     rating: 5.0,
     reviewCount: 312,
-    image: '/products/raj-combo.jpg',
+    image: '/products/raj-combo.svg',
     badge: 'Royal Combo 60% OFF',
     swatch: '#991b1b',
     shipsFromCity: 'Jaipur'
@@ -1227,7 +1227,7 @@ export const products: Product[] = [
     artisan: 'Ahmedabad Garba Guild',
     rating: 5.0,
     reviewCount: 285,
-    image: '/products/guj-combo.jpg',
+    image: '/products/guj-combo.svg',
     badge: 'Garba Combo 61% OFF',
     swatch: '#059669',
     shipsFromCity: 'Ahmedabad'
@@ -1254,7 +1254,7 @@ export const products: Product[] = [
     artisan: 'Amritsar Heritage Co-op',
     rating: 4.9,
     reviewCount: 240,
-    image: '/products/pb-combo.jpg',
+    image: '/products/pb-combo.svg',
     badge: 'Punjab Combo 57% OFF',
     swatch: '#eab308',
     shipsFromCity: 'Amritsar'
@@ -1281,7 +1281,7 @@ export const products: Product[] = [
     artisan: 'Lucknow Royal Atelier',
     rating: 5.0,
     reviewCount: 198,
-    image: '/products/up-combo.jpg',
+    image: '/products/up-combo.svg',
     badge: 'Awadh Combo 61% OFF',
     swatch: '#7a1f2b',
     shipsFromCity: 'Lucknow'
@@ -1308,7 +1308,7 @@ export const products: Product[] = [
     artisan: 'Pune Shahi Guild',
     rating: 4.9,
     reviewCount: 178,
-    image: '/products/mh-combo.jpg',
+    image: '/products/mh-combo.svg',
     badge: 'Peshwai Combo 62% OFF',
     swatch: '#2563eb',
     shipsFromCity: 'Pune'
@@ -1335,7 +1335,7 @@ export const products: Product[] = [
     artisan: 'Kanchi Temple Atelier',
     rating: 5.0,
     reviewCount: 340,
-    image: '/products/tn-combo.jpg',
+    image: '/products/tn-combo.svg',
     badge: 'Temple Combo 60% OFF',
     swatch: '#991b1b',
     shipsFromCity: 'Kanchipuram'
@@ -1362,7 +1362,7 @@ export const products: Product[] = [
     artisan: 'Thrissur Handloom Guild',
     rating: 4.9,
     reviewCount: 165,
-    image: '/products/kl-combo.jpg',
+    image: '/products/kl-combo.svg',
     badge: 'Onam Combo 60% OFF',
     swatch: '#fef08a',
     shipsFromCity: 'Thrissur'
@@ -1389,7 +1389,7 @@ export const products: Product[] = [
     artisan: 'Sualkuchi Heritage Atelier',
     rating: 4.9,
     reviewCount: 154,
-    image: '/products/as-combo.jpg',
+    image: '/products/as-combo.svg',
     badge: 'Bihu Combo 60% OFF',
     swatch: '#d97706',
     shipsFromCity: 'Guwahati'
@@ -1416,7 +1416,7 @@ export const products: Product[] = [
     artisan: 'Phulia Heritage Guild',
     rating: 4.9,
     reviewCount: 210,
-    image: '/products/wb-combo.jpg',
+    image: '/products/wb-combo.svg',
     badge: 'Puja Combo 58% OFF',
     swatch: '#dc2626',
     shipsFromCity: 'Kolkata'
@@ -1443,7 +1443,7 @@ export const products: Product[] = [
     artisan: 'Srinagar Craft Guild',
     rating: 5.0,
     reviewCount: 260,
-    image: '/products/jk-combo.jpg',
+    image: '/products/jk-combo.svg',
     badge: 'Cashmere Combo 60% OFF',
     swatch: '#f5f5f4',
     shipsFromCity: 'Srinagar'
