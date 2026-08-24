@@ -781,7 +781,7 @@ export const products: Product[] = [
     artisan: 'Coimbatore Craft Atelier',
     rating: 4.9,
     reviewCount: 154,
-    image: '/products/kanjeevaram-bridal.jpg',
+    image: '/products/temple-gold-lakshmi-haar.jpg',
     badge: 'Bridal Belt 60% OFF',
     swatch: '#ca8a04',
     shipsFromCity: 'Coimbatore'
@@ -1115,7 +1115,7 @@ export const products: Product[] = [
     artisan: 'Cuttack Silver Artisans',
     rating: 5.0,
     reviewCount: 189,
-    image: '/products/pochampally-ikat.jpg',
+    image: '/products/kashmiri-dejhoor-earrings.jpg',
     badge: 'Silver Filigree 58% OFF',
     swatch: '#94a3b8',
     shipsFromCity: 'Cuttack'
@@ -1171,7 +1171,7 @@ export const products: Product[] = [
     artisan: 'Charminar Pearl Merchants',
     rating: 4.9,
     reviewCount: 210,
-    image: '/products/pochampally-ikat.jpg',
+    image: '/products/nawabi-pearl-passa.jpg',
     badge: 'Hyderabadi Pearl 60% OFF',
     swatch: '#f5f5f4',
     shipsFromCity: 'Hyderabad'
