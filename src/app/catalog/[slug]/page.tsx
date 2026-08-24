@@ -4,6 +4,7 @@ import { ProductCard } from '@/components/ProductCard';
 import { CustomerReviews } from '@/components/CustomerReviews';
 import { findProduct, products } from '@/data/catalog';
 import { formatINR, splitGST, deliveryEtaDays, INDIAN_PAYMENTS } from '@/lib/india';
+import { ProductPageClient } from '@/components/ProductPageClient';
 
 export function generateStaticParams() {
   return products.map((product) => ({ slug: product.slug }));
@@ -32,29 +33,30 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
           <img src={product.image} alt={product.name} className="aspect-[3/4] h-full w-full object-cover" fetchPriority="high" />
         </div>
 
-        <div className="max-w-2xl">
-          <span className="label-eyebrow text-xs">{product.culture} · {product.region}</span>
-          <h1 className="display-h mt-2 text-5xl leading-tight text-[#33272a] sm:text-6xl">{product.name}</h1>
-          <p className="mt-3 text-xs text-[#594a4e] font-medium">
-            Handwoven by {product.artisan} · ★ {product.rating.toFixed(1)} rating from {product.reviewCount} verified reviews
-          </p>
+        <div className="max-w-2xl space-y-6">
+          <div>
+            <span className="label-eyebrow text-xs">{product.culture} · {product.region}</span>
+            <h1 className="display-h mt-2 text-5xl leading-tight text-[#33272a] sm:text-6xl">{product.name}</h1>
+            <p className="mt-3 text-xs text-[#594a4e] font-medium">
+              Handwoven by {product.artisan} · ★ {product.rating.toFixed(1)} rating from {product.reviewCount} verified reviews
+            </p>
 
-          <div className="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <p className="display-h text-4xl font-bold text-[#33272a]">{formatINR(product.priceINR)}</p>
-            <span className="text-base text-[#594a4e]/60 line-through">
-              {formatINR(product.originalPriceINR || Math.round(product.priceINR * 1.25))}
-            </span>
-            <span className="rounded-md bg-rose-100 px-2 py-0.5 text-xs font-bold text-rose-700">
-              {Math.round((((product.originalPriceINR || Math.round(product.priceINR * 1.25)) - product.priceINR) / (product.originalPriceINR || Math.round(product.priceINR * 1.25))) * 100)}% OFF
-            </span>
-            <p className="text-xs uppercase tracking-[.16em] text-[#ff8ba7] font-bold ml-2">Inclusive of GST</p>
+            <div className="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <p className="display-h text-4xl font-bold text-[#33272a]">{formatINR(product.priceINR)}</p>
+              <span className="text-base text-[#594a4e]/60 line-through">
+                {formatINR(product.originalPriceINR || Math.round(product.priceINR * 2.2))}
+              </span>
+              <span className="rounded-md bg-rose-100 px-2.5 py-0.5 text-xs font-bold text-rose-700">
+                {Math.round((((product.originalPriceINR || Math.round(product.priceINR * 2.2)) - product.priceINR) / (product.originalPriceINR || Math.round(product.priceINR * 2.2))) * 100)}% OFF
+              </span>
+              <p className="text-xs uppercase tracking-[.16em] text-[#ff8ba7] font-bold ml-2">Inclusive of GST</p>
+            </div>
+            <p className="mt-1 text-xs text-[#594a4e]">Taxable value {formatINR(base)} · GST @{product.gstPct}% {formatINR(gst)} · HSN {product.hsnCode}</p>
           </div>
-          <p className="mt-1 text-xs text-[#594a4e]">Taxable value {formatINR(base)} · GST @{product.gstPct}% {formatINR(gst)} · HSN {product.hsnCode}</p>
 
-          <div className="my-6 h-px bg-[#33272a]/15" />
           <p className="text-base leading-relaxed text-[#594a4e]">{product.story}</p>
 
-          <ul className="mt-6 grid gap-2 sm:grid-cols-3">
+          <ul className="grid gap-2 sm:grid-cols-3">
             {product.highlights.map((item) => (
               <li key={item} className="rounded-xl border border-[#33272a]/15 bg-[#fffffe] px-3.5 py-2.5 text-xs text-[#33272a] font-medium shadow-2xs">
                 {item}
@@ -62,20 +64,14 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
             ))}
           </ul>
 
-          <div className="mt-7 flex flex-wrap items-center gap-3">
-            <label className="text-[10px] uppercase tracking-[.18em] text-[#ff8ba7] font-bold" htmlFor="size">Size</label>
-            <select id="size" className="rounded-xl border border-[#33272a]/20 bg-[#fffffe] px-3.5 py-2 text-xs text-[#33272a] outline-none focus:border-[#ff8ba7]">
-              {product.sizes.map((size) => <option key={size}>{size}</option>)}
-            </select>
-            <button className="wax-button px-6 py-3 text-xs">Add to Bag</button>
-            <button className="ghost-button px-5 py-2.5 text-xs">Save Wishlist</button>
-          </div>
+          {/* Interactive Client Section: Sizes, Add to Cart, 7-Day Return Badges, Pincode Checker, Available Coupons */}
+          <ProductPageClient product={product} />
 
-          <dl className="mt-8 grid gap-3 sm:grid-cols-2">
+          <dl className="grid gap-3 sm:grid-cols-2">
             {[
               ['Fabric', product.fabric], ['Occasion', product.occasion],
               ['Colours', product.colors.join(' · ')], ['Ships from', `${product.shipsFromCity}, ${product.state}`],
-              ['Delivery', `${eta.min}–${eta.max} business days`], ['COD & returns', 'COD available · 7-day returns']
+              ['Delivery', `${eta.min}–${eta.max} business days`], ['COD & Returns', 'COD Available · 7-Day Free Replacement']
             ].map(([label, value]) => (
               <div key={label} className="rounded-2xl border border-[#33272a]/15 bg-[#fffffe] p-4 shadow-2xs">
                 <dt className="text-[10px] uppercase tracking-[.16em] text-[#ff8ba7] font-bold">{label}</dt>
