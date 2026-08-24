@@ -4,32 +4,31 @@ import { useState } from 'react';
 import type { Product } from '@/data/catalog';
 import { ProductCard } from './ProductCard';
 
-type StateCategory = 'all' | 'garments' | 'jewelry' | 'combos';
+type StateCategory = 'all' | 'garments' | 'jewelry';
 
 export function StateProductsGrid({ stateName, products }: { stateName: string; products: Product[] }) {
+  // Filter out any combo set products
+  const stateProducts = products.filter((p) => p.garment !== 'Combo Set' && !p.name.includes('Combo') && !p.badge?.includes('Combo'));
   const [activeTab, setActiveTab] = useState<StateCategory>('all');
 
-  const garmentsList = products.filter((p) => p.garment !== 'Jewelry' && p.garment !== 'Kamarbandh' && p.garment !== 'Combo Set');
-  const jewelryList = products.filter((p) => p.garment === 'Jewelry' || p.garment === 'Kamarbandh');
-  const combosList = products.filter((p) => p.garment === 'Combo Set' || p.name.includes('Combo') || p.badge?.includes('Combo'));
+  const garmentsList = stateProducts.filter((p) => p.garment !== 'Jewelry' && p.garment !== 'Kamarbandh');
+  const jewelryList = stateProducts.filter((p) => p.garment === 'Jewelry' || p.garment === 'Kamarbandh');
 
-  const filteredProducts = products.filter((p) => {
+  const filteredProducts = stateProducts.filter((p) => {
     if (activeTab === 'all') return true;
-    if (activeTab === 'garments') return p.garment !== 'Jewelry' && p.garment !== 'Kamarbandh' && p.garment !== 'Combo Set';
+    if (activeTab === 'garments') return p.garment !== 'Jewelry' && p.garment !== 'Kamarbandh';
     if (activeTab === 'jewelry') return p.garment === 'Jewelry' || p.garment === 'Kamarbandh';
-    if (activeTab === 'combos') return p.garment === 'Combo Set' || p.name.includes('Combo') || p.badge?.includes('Combo');
     return true;
   });
 
   return (
     <div className="space-y-8 font-sans">
-      {/* 3 State Option Tabs */}
+      {/* 2 State Option Tabs */}
       <div className="flex flex-wrap gap-3">
         {[
-          { id: 'all', label: `All ${stateName} Items (${products.length})` },
+          { id: 'all', label: `All ${stateName} Items (${stateProducts.length})` },
           { id: 'garments', label: `1. Textiles & Clothes (${garmentsList.length})` },
-          { id: 'jewelry', label: `2. Traditional Jewelry (${jewelryList.length})` },
-          { id: 'combos', label: `3. Royal Heritage Combos (${combosList.length})` }
+          { id: 'jewelry', label: `2. Traditional Jewelry (${jewelryList.length})` }
         ].map((tab) => (
           <button
             key={tab.id}
