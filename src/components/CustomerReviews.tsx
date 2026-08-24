@@ -102,14 +102,13 @@ export function CustomerReviews({ productId, productName, initialRating, initial
           <p className="mt-1 text-xs text-[#594a4e]">Share your experience with this handwoven heirloom.</p>
 
           {!user?.purchasedProductIds?.includes(productId) ? (
-            <div className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 p-6 text-center text-amber-900">
-              <div className="text-2xl mb-1">🔒</div>
-              <h4 className="font-bold text-sm">Verified Purchaser Review Only</h4>
-              <p className="mt-1.5 text-xs text-amber-800 leading-relaxed">
-                To maintain authentic handloom ratings, only buyers who have purchased this garment can submit a customer review.
-              </p>
-              <p className="mt-3 text-[11px] font-semibold text-[#33272a]">
-                Purchase this product to unlock verified review posting!
+            <div className="mt-6 rounded-2xl border border-[#33272a]/15 bg-[#faeee7]/60 p-6 text-center text-[#33272a]">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-[#ff8ba7] font-bold block mb-1">
+                Verified Buyer Authentication
+              </span>
+              <h4 className="display-h text-lg text-[#33272a]">Verified Customer Reviews Only</h4>
+              <p className="mt-2 text-xs text-[#594a4e] leading-relaxed max-w-md mx-auto">
+                To maintain authentic artisan ratings, review submissions are restricted to verified collectors who have purchased this heirloom item.
               </p>
             </div>
           ) : (
@@ -207,8 +206,8 @@ export function CustomerReviews({ productId, productName, initialRating, initial
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-[#33272a] text-sm">{rev.reviewerName}</span>
                       {rev.isVerified && (
-                        <span className="rounded-full bg-emerald-100 border border-emerald-300 px-2 py-0.5 text-[8px] uppercase tracking-wider text-emerald-800 font-bold">
-                          Verified Buyer ✓
+                        <span className="rounded-full bg-[#faeee7] border border-[#33272a]/15 px-2.5 py-0.5 text-[9px] uppercase tracking-wider text-[#33272a] font-bold">
+                          Verified Buyer
                         </span>
                       )}
                     </div>
