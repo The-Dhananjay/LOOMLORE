@@ -20,7 +20,7 @@ export function Logo({ size = 'medium', href = '/' }: { size?: 'small' | 'medium
   };
 
   return (
-    <Link href={href} className="group inline-flex items-center gap-3.5" aria-label="Loomlore Home">
+    <Link href={href} className="group inline-flex items-center gap-3.5 cursor-pointer select-none relative z-10" aria-label="Loomlore Home - Go to Homepage">
       {/* Bold High-Definition Lotus & L Interlocking Emblem */}
       <div className={`relative flex shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ff8ba7] via-[#fffffe] to-[#faeee7] shadow-md border-2 border-[#33272a]/20 transition duration-300 group-hover:scale-105 group-hover:border-[#ff8ba7] ${iconSizes[size]}`}>
         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-full w-full">
@@ -46,12 +46,12 @@ export function Logo({ size = 'medium', href = '/' }: { size?: 'small' | 'medium
         </svg>
       </div>
 
-      {/* Soria Serif Wordmark */}
-      <div className="flex flex-col">
-        <span className={`display-h text-[#33272a] font-bold leading-none ${titleSizes[size]}`}>
+      {/* Soria Serif Wordmark - Fully Clickable to Home */}
+      <div className="flex flex-col cursor-pointer">
+        <span className={`display-h text-[#33272a] font-bold leading-none transition-colors duration-200 group-hover:text-[#ff8ba7] ${titleSizes[size]}`}>
           LOOMLORE
         </span>
-        <span className={`font-sans text-[#ff8ba7] font-bold uppercase leading-tight mt-1 ${subtextSizes[size]}`}>
+        <span className={`font-sans text-[#ff8ba7] font-bold uppercase leading-tight mt-1 transition-colors duration-200 group-hover:text-[#33272a] ${subtextSizes[size]}`}>
           Heirlooms of India
         </span>
       </div>
