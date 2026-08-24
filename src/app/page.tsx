@@ -107,6 +107,33 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* NEW: Traditional Jewelry & Cultural Ornaments Section */}
+      <section className="border-b border-[#33272a]/15 bg-[#faeee7] px-6 py-20 lg:px-10 lg:py-28">
+        <div className="mx-auto w-full max-w-7xl">
+          <div className="flex flex-wrap items-end justify-between gap-5">
+            <div>
+              <span className="label-eyebrow text-xs">Royal State Jewelry &amp; Heritage Crafts</span>
+              <h2 className="display-h mt-2 text-4xl text-[#33272a] sm:text-5xl">Traditional State Jewelry.</h2>
+              <p className="mt-2 text-sm text-[#594a4e] max-w-xl">
+                Authentic Kundan Meenakari, Temple Gold Lakshmi Haars, Kolhapuri Saaj, Silver Filigree, and Assamese Jonbiri ornaments.
+              </p>
+            </div>
+            <Link href="/catalog?garment=Jewelry" className="wax-button text-xs px-6 py-3">
+              Explore All Jewelry ({products.filter((p) => p.garment === 'Jewelry' || p.garment === 'Kamarbandh').length}) →
+            </Link>
+          </div>
+
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {products
+              .filter((p) => p.garment === 'Jewelry' || p.garment === 'Kamarbandh')
+              .slice(0, 4)
+              .map((jewelryItem) => (
+                <ProductCard key={jewelryItem.id} product={jewelryItem} />
+              ))}
+          </div>
+        </div>
+      </section>
+
       {/* Regional Exploration Cards */}
       <section className="mx-auto w-full max-w-7xl px-6 py-20 lg:px-10 lg:py-28">
         <div className="max-w-2xl">

@@ -134,12 +134,12 @@ export default function StatePage({ params }: { params: { id: string } }) {
         <div className="mx-auto w-full max-w-7xl">
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div>
-              <p className="label-eyebrow text-xs">Handloom Archive</p>
+              <p className="label-eyebrow text-xs">Handloom &amp; Heritage Archive</p>
               <h2 className="display-h mt-2 text-4xl text-[#33272a] sm:text-5xl">
-                All Traditional Clothing of {state.name}.
+                All Traditional Clothing &amp; Jewelry of {state.name}.
               </h2>
               <p className="mt-2 text-sm text-[#594a4e] max-w-2xl">
-                Handwoven traditional wear for Women and Men from registered {state.name} artisan cooperatives.
+                Handwoven traditional wear for Women &amp; Men and authentic regional jewelry from registered {state.name} artisan cooperatives.
               </p>
             </div>
             <Link href="/catalog" className="ghost-button text-xs">

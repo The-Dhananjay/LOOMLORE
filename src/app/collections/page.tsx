@@ -7,6 +7,7 @@ import { products } from '@/data/catalog';
 
 const CURATED_CATEGORIES = [
   { id: 'all', label: 'All Collections' },
+  { id: 'jewelry', label: '✨ Traditional Jewelry & Ornaments' },
   { id: 'wedding', label: 'Bridal & Wedding' },
   { id: 'festive', label: 'Festive Celebrations' },
   { id: 'silks', label: 'Heritage Silks' },
@@ -19,6 +20,7 @@ export default function CollectionsPage() {
 
   const filteredProducts = products.filter((p) => {
     if (activeCategory === 'all') return true;
+    if (activeCategory === 'jewelry') return p.garment === 'Jewelry' || p.garment === 'Kamarbandh';
     if (activeCategory === 'wedding') return p.occasion === 'Wedding' || p.badge?.includes('Bridal') || p.badge?.includes('Royal');
     if (activeCategory === 'festive') return p.occasion === 'Festive' || p.occasion === 'Festival' || p.occasion === 'Diwali' || p.occasion === 'Navratri' || p.occasion === 'Onam';
     if (activeCategory === 'silks') return p.fabric.includes('Silk');

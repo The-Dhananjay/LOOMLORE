@@ -53,10 +53,10 @@ export default function CatalogPage({ searchParams }: { searchParams: Search }) 
           <Link
             href="/catalog"
             className={`rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-wider transition ${
-              !gender ? 'bg-[#831843] text-white shadow-md' : 'border border-rose-200 bg-white text-[#831843] hover:border-[#f43f5e]'
+              !gender && !garment ? 'bg-[#831843] text-white shadow-md' : 'border border-rose-200 bg-white text-[#831843] hover:border-[#f43f5e]'
             }`}
           >
-            All Clothing ({products.length})
+            All Products ({products.length})
           </Link>
           <Link
             href="/catalog?gender=Women"
@@ -64,7 +64,7 @@ export default function CatalogPage({ searchParams }: { searchParams: Search }) 
               gender === 'Women' ? 'bg-[#831843] text-white shadow-md' : 'border border-rose-200 bg-white text-[#831843] hover:border-[#f43f5e]'
             }`}
           >
-            Women Traditional ({products.filter((p) => p.gender === 'Women').length})
+            Women's Drapes ({products.filter((p) => p.gender === 'Women' && p.garment !== 'Jewelry' && p.garment !== 'Kamarbandh').length})
           </Link>
           <Link
             href="/catalog?gender=Men"
@@ -72,7 +72,15 @@ export default function CatalogPage({ searchParams }: { searchParams: Search }) 
               gender === 'Men' ? 'bg-[#831843] text-white shadow-md' : 'border border-rose-200 bg-white text-[#831843] hover:border-[#f43f5e]'
             }`}
           >
-            Men Traditional ({products.filter((p) => p.gender === 'Men').length})
+            Men's Royal Wear ({products.filter((p) => p.gender === 'Men').length})
+          </Link>
+          <Link
+            href="/catalog?garment=Jewelry"
+            className={`rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-wider transition ${
+              garment === 'Jewelry' || garment === 'Kamarbandh' ? 'bg-[#f43f5e] text-white shadow-md' : 'border border-rose-200 bg-white text-[#831843] hover:border-[#f43f5e]'
+            }`}
+          >
+            ✨ Traditional Jewelry ({products.filter((p) => p.garment === 'Jewelry' || p.garment === 'Kamarbandh').length})
           </Link>
         </div>
       </header>

@@ -55,8 +55,8 @@ export const STATES: StateScene[] = [
     artisan: 'Bhopa Cooperative',
     artisanStory: 'Hand-tied by women of the Bhopa community across 12 days. Paired with royal Bandhgala tailoring.',
     occasion: 'Diwali',
-    priceINR: 32499,
-    highlight: '1,200 micro-tied dots & royal tailoring.'
+    priceINR: 2499,
+    highlight: '1,200 micro-tied dots & royal Kundan jewelry.'
   },
   {
     id: 'gujarat',
@@ -68,16 +68,16 @@ export const STATES: StateScene[] = [
     architecture: 'Stepwell arches and carved wooden havelis',
     music: 'Garba dholak & sanedo beats',
     particles: 'sand',
-    signatureGarment: 'Patola Saree & Kediyu Garba Set',
+    signatureGarment: 'Patola Saree & Tribal Silver Hasli',
     womenGarment: 'Patan Patola Double-Ikat Saree',
     menGarment: 'Traditional Garba Kediyu & Dhoti Set',
     fabric: 'Silk & Mirror-work Cotton',
     embroidery: 'Double-Ikat & Hand Mirror-work',
     artisan: 'Patan Salvi Family',
-    artisanStory: 'Double-ikat Patola woven over 6 months by master Salvi weavers alongside festive mirror-work kediyus.',
+    artisanStory: 'Double-ikat Patola woven over 6 months by master Salvi weavers alongside festive mirror-work kediyus and tribal silver Haslis.',
     occasion: 'Navratri',
-    priceINR: 42999,
-    highlight: 'Pure double-ikat silk & mirror work.'
+    priceINR: 2499,
+    highlight: 'Pure double-ikat silk & silver tribal haslis.'
   },
   {
     id: 'punjab',
@@ -89,15 +89,15 @@ export const STATES: StateScene[] = [
     architecture: 'Brick haveli with carved doors',
     music: 'Dhol beats and bhangra',
     particles: 'sand',
-    signatureGarment: 'Phulkari Bagh Suit & Muktsari Kurta',
+    signatureGarment: 'Phulkari Bagh Suit & Peepal Patti Jhumkis',
     womenGarment: 'Phulkari Salwar Kameez',
     menGarment: 'Muktsari Kurta Pajama with Phulkari Stole',
     fabric: 'Chanderi Cotton & Soft Khadi',
     embroidery: 'Phulkari floss silk embroidery',
     artisan: 'Hussainpuri Phulkari',
-    artisanStory: 'The bagh (garden) phulkari is a 40-day stitch by mothers for daughters alongside tailored Muktsari kurtas.',
+    artisanStory: 'The bagh (garden) phulkari is a 40-day stitch by mothers for daughters alongside peepal patti gold jhumkis.',
     occasion: 'Baisakhi',
-    priceINR: 8499,
+    priceINR: 1999,
     highlight: 'Six-colour floss silk, 90 hours of work.'
   },
   {
