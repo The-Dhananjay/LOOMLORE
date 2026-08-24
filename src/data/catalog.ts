@@ -229,7 +229,7 @@ export const products: Product[] = [
     artisan: 'Johari Bazaar Guild Jaipur',
     rating: 4.9,
     reviewCount: 215,
-    image: '/products/bandhani-saree.jpg',
+    image: '/products/jaipur-kundan-choker.jpg',
     badge: 'Royal Jewelry 63% OFF',
     swatch: '#d97706',
     shipsFromCity: 'Jaipur'
@@ -393,7 +393,7 @@ export const products: Product[] = [
     artisan: 'Bhuj Tribal Craftsman',
     rating: 4.9,
     reviewCount: 168,
-    image: '/products/navratri-kediyu-dhoti.jpg',
+    image: '/products/kutchi-silver-hasli.jpg',
     badge: 'Tribal Jewelry 60% OFF',
     swatch: '#64748b',
     shipsFromCity: 'Bhuj'
@@ -476,7 +476,7 @@ export const products: Product[] = [
     artisan: 'Amritsar Jewel Guild',
     rating: 4.9,
     reviewCount: 132,
-    image: '/products/phulkari-salwar.jpg',
+    image: '/products/peepal-patti-jhumki.jpg',
     badge: 'Punjabi Ornaments',
     swatch: '#eab308',
     shipsFromCity: 'Amritsar'
@@ -587,7 +587,7 @@ export const products: Product[] = [
     artisan: 'Chowk Jewel House Lucknow',
     rating: 4.9,
     reviewCount: 176,
-    image: '/products/chikankari-anarkali.webp',
+    image: '/products/nawabi-pearl-passa.jpg',
     badge: 'Nawabi Passa 60% OFF',
     swatch: '#fbcfe8',
     shipsFromCity: 'Lucknow'
@@ -670,7 +670,7 @@ export const products: Product[] = [
     artisan: 'Kolhapur Sonar Artisans',
     rating: 4.9,
     reviewCount: 198,
-    image: '/products/paithani-saree.jpg',
+    image: '/products/kolhapuri-saaj-necklace.jpg',
     badge: 'Maharashtrian Saaj 60% OFF',
     swatch: '#ca8a04',
     shipsFromCity: 'Kolhapur'
@@ -754,7 +754,7 @@ export const products: Product[] = [
     artisan: 'Madurai Temple Goldsmiths',
     rating: 5.0,
     reviewCount: 240,
-    image: '/products/kanjeevaram-bridal.jpg',
+    image: '/products/temple-gold-lakshmi-haar.jpg',
     badge: 'Temple Jewelry 62% OFF',
     swatch: '#b45309',
     shipsFromCity: 'Madurai'
@@ -864,7 +864,7 @@ export const products: Product[] = [
     artisan: 'Thrissur Gold Guild',
     rating: 4.9,
     reviewCount: 182,
-    image: '/products/kerala-kasavu.jpg',
+    image: '/products/kerala-palakka-mala.jpg',
     badge: 'Kerala Heritage 58% OFF',
     swatch: '#047857',
     shipsFromCity: 'Thrissur'
@@ -947,7 +947,7 @@ export const products: Product[] = [
     artisan: 'Srinagar Silver Silversmiths',
     rating: 4.9,
     reviewCount: 115,
-    image: '/products/pashmina-shawl.jpg',
+    image: '/products/kashmiri-dejhoor-earrings.jpg',
     badge: 'Kashmiri Silver 58% OFF',
     swatch: '#94a3b8',
     shipsFromCity: 'Srinagar'
@@ -1003,7 +1003,7 @@ export const products: Product[] = [
     artisan: 'Rongaon Jewellers Assam',
     rating: 4.9,
     reviewCount: 142,
-    image: '/products/mekhela-chador.jpg',
+    image: '/products/assamese-jonbiri-pendant.jpg',
     badge: 'Assamese Gohona 59% OFF',
     swatch: '#b45309',
     shipsFromCity: 'Guwahati'
@@ -1059,7 +1059,7 @@ export const products: Product[] = [
     artisan: 'Bikna Dokra Craftsmen',
     rating: 4.9,
     reviewCount: 162,
-    image: '/products/pochampally-ikat.jpg',
+    image: '/products/bengal-dokra-choker.jpg',
     badge: 'Bengal Dokra 59% OFF',
     swatch: '#b45309',
     shipsFromCity: 'Bankura'
