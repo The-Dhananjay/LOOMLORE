@@ -1201,7 +1201,7 @@ export const products: Product[] = [
     rating: 5.0,
     reviewCount: 312,
     image: '/products/bandhani-saree.jpg',
-    badge: '👑 Royal Combo 60% OFF',
+    badge: 'Royal Combo 60% OFF',
     swatch: '#991b1b',
     shipsFromCity: 'Jaipur'
   },
@@ -1228,7 +1228,7 @@ export const products: Product[] = [
     rating: 5.0,
     reviewCount: 285,
     image: '/products/navratri-lehenga.webp',
-    badge: '👑 Garba Combo 61% OFF',
+    badge: 'Garba Combo 61% OFF',
     swatch: '#059669',
     shipsFromCity: 'Ahmedabad'
   },
@@ -1255,7 +1255,7 @@ export const products: Product[] = [
     rating: 4.9,
     reviewCount: 240,
     image: '/products/phulkari-salwar.jpg',
-    badge: '👑 Punjab Combo 57% OFF',
+    badge: 'Punjab Combo 57% OFF',
     swatch: '#eab308',
     shipsFromCity: 'Amritsar'
   },
@@ -1282,7 +1282,7 @@ export const products: Product[] = [
     rating: 5.0,
     reviewCount: 198,
     image: '/products/banarasi-zardozi.webp',
-    badge: '👑 Awadh Combo 61% OFF',
+    badge: 'Awadh Combo 61% OFF',
     swatch: '#7a1f2b',
     shipsFromCity: 'Lucknow'
   },
@@ -1309,7 +1309,7 @@ export const products: Product[] = [
     rating: 4.9,
     reviewCount: 178,
     image: '/products/paithani-saree.jpg',
-    badge: '👑 Peshwai Combo 62% OFF',
+    badge: 'Peshwai Combo 62% OFF',
     swatch: '#2563eb',
     shipsFromCity: 'Pune'
   },
@@ -1336,7 +1336,7 @@ export const products: Product[] = [
     rating: 5.0,
     reviewCount: 340,
     image: '/products/kanjeevaram-bridal.jpg',
-    badge: '👑 Temple Combo 60% OFF',
+    badge: 'Temple Combo 60% OFF',
     swatch: '#991b1b',
     shipsFromCity: 'Kanchipuram'
   },
@@ -1363,7 +1363,7 @@ export const products: Product[] = [
     rating: 4.9,
     reviewCount: 165,
     image: '/products/kerala-kasavu.jpg',
-    badge: '👑 Onam Combo 60% OFF',
+    badge: 'Onam Combo 60% OFF',
     swatch: '#fef08a',
     shipsFromCity: 'Thrissur'
   },
@@ -1390,7 +1390,7 @@ export const products: Product[] = [
     rating: 4.9,
     reviewCount: 154,
     image: '/products/mekhela-chador.jpg',
-    badge: '👑 Bihu Combo 60% OFF',
+    badge: 'Bihu Combo 60% OFF',
     swatch: '#d97706',
     shipsFromCity: 'Guwahati'
   },
@@ -1417,7 +1417,7 @@ export const products: Product[] = [
     rating: 4.9,
     reviewCount: 210,
     image: '/products/pochampally-ikat.jpg',
-    badge: '👑 Puja Combo 58% OFF',
+    badge: 'Puja Combo 58% OFF',
     swatch: '#dc2626',
     shipsFromCity: 'Kolkata'
   },
@@ -1444,7 +1444,7 @@ export const products: Product[] = [
     rating: 5.0,
     reviewCount: 260,
     image: '/products/pashmina-shawl.jpg',
-    badge: '👑 Cashmere Combo 60% OFF',
+    badge: 'Cashmere Combo 60% OFF',
     swatch: '#f5f5f4',
     shipsFromCity: 'Srinagar'
   }

@@ -27,9 +27,9 @@ export function ProductPageClient({ product }: { product: Product }) {
     e.preventDefault();
     const clean = pincode.replace(/\D/g, '');
     if (clean.length === 6) {
-      setPincodeMsg(`✅ Express Delivery Available to ${clean}! Expected by 3–5 Business Days. Cash on Delivery & 7-Day Easy Return Eligible.`);
+      setPincodeMsg(`Express Delivery Available to ${clean}! Expected by 3–5 Business Days. Cash on Delivery & 7-Day Easy Return Eligible.`);
     } else {
-      setPincodeMsg('⚠️ Please enter a valid 6-digit Indian Pincode.');
+      setPincodeMsg('Please enter a valid 6-digit Indian Pincode.');
     }
   }
 
@@ -78,14 +78,14 @@ export function ProductPageClient({ product }: { product: Product }) {
             onClick={handleAddToCart}
             className="wax-button flex-1 py-3.5 text-xs font-bold flex items-center justify-center gap-2 shadow-md"
           >
-            {addedNotice ? '✓ Added to Bag!' : '🛍️ ADD TO BAG'}
+            {addedNotice ? 'Added to Bag' : 'ADD TO BAG'}
           </button>
           <button
             type="button"
             onClick={() => setIsGiModalOpen(true)}
             className="ghost-button py-3.5 px-5 text-xs font-semibold"
           >
-            📜 GI Tag Guarantee
+            GI Tag Guarantee
           </button>
         </div>
       </div>
@@ -93,12 +93,11 @@ export function ProductPageClient({ product }: { product: Product }) {
       {/* 7-DAY RETURN & TRUST BADGES GRID */}
       <div className="rounded-2xl border border-[#33272a]/15 bg-[#fffffe] p-5 shadow-2xs space-y-4">
         <h3 className="text-xs font-bold uppercase tracking-wider text-[#33272a]">
-          Loomlore E-Commerce Quality &amp; Return Guarantees
+          Loomlore Quality &amp; Return Guarantees
         </h3>
 
         <div className="grid grid-cols-2 gap-3 text-xs text-[#33272a]">
           <div className="flex items-start gap-2.5 rounded-xl bg-[#faeee7]/60 p-3 border border-[#33272a]/10">
-            <span className="text-lg">↺</span>
             <div>
               <strong className="block text-[#33272a] font-bold text-[11px]">7-Day Easy Returns</strong>
               <span className="text-[10px] text-[#594a4e]">Hassle-free 7-day replacement &amp; return pickup</span>
@@ -106,7 +105,6 @@ export function ProductPageClient({ product }: { product: Product }) {
           </div>
 
           <div className="flex items-start gap-2.5 rounded-xl bg-[#faeee7]/60 p-3 border border-[#33272a]/10">
-            <span className="text-lg">🚚</span>
             <div>
               <strong className="block text-[#33272a] font-bold text-[11px]">Free Pan-India Delivery</strong>
               <span className="text-[10px] text-[#594a4e]">Free shipping on orders above ₹999</span>
@@ -114,7 +112,6 @@ export function ProductPageClient({ product }: { product: Product }) {
           </div>
 
           <div className="flex items-start gap-2.5 rounded-xl bg-[#faeee7]/60 p-3 border border-[#33272a]/10">
-            <span className="text-lg">💵</span>
             <div>
               <strong className="block text-[#33272a] font-bold text-[11px]">Cash on Delivery (COD)</strong>
               <span className="text-[10px] text-[#594a4e]">Pay at doorstep across 25,000+ pincodes</span>
@@ -122,7 +119,6 @@ export function ProductPageClient({ product }: { product: Product }) {
           </div>
 
           <div className="flex items-start gap-2.5 rounded-xl bg-[#faeee7]/60 p-3 border border-[#33272a]/10">
-            <span className="text-lg">🛡️</span>
             <div>
               <strong className="block text-[#33272a] font-bold text-[11px]">100% Authentic Handloom</strong>
               <span className="text-[10px] text-[#594a4e]">Direct artisan co-op craft &amp; GI Tag certified</span>
@@ -153,7 +149,7 @@ export function ProductPageClient({ product }: { product: Product }) {
       {/* ACTIVE DISCOUNTS & COUPON OFFERS */}
       <div className="rounded-2xl border border-amber-300 bg-amber-50/70 p-5 shadow-2xs space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] uppercase tracking-widest text-amber-900 font-bold">🏷️ Available Coupons &amp; Offers</span>
+          <span className="text-[10px] uppercase tracking-widest text-amber-900 font-bold">Available Coupons &amp; Offers</span>
           <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[9px] font-bold text-amber-900">3 Active</span>
         </div>
 
@@ -174,7 +170,7 @@ export function ProductPageClient({ product }: { product: Product }) {
                 onClick={() => handleCopyCoupon(off.code)}
                 className="rounded-lg bg-[#faeee7] border border-[#33272a]/20 px-3 py-1 text-[10px] font-bold text-[#33272a] hover:bg-[#ff8ba7] transition"
               >
-                {copiedCoupon === off.code ? '✓ Copied!' : 'Copy Code'}
+                {copiedCoupon === off.code ? 'Copied!' : 'Copy Code'}
               </button>
             </div>
           ))}

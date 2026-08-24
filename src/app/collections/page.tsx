@@ -7,7 +7,7 @@ import { products } from '@/data/catalog';
 
 const CURATED_CATEGORIES = [
   { id: 'all', label: 'All Collections' },
-  { id: 'jewelry', label: '✨ Traditional Jewelry & Ornaments' },
+  { id: 'jewelry', label: 'Traditional Jewelry & Ornaments' },
   { id: 'wedding', label: 'Bridal & Wedding' },
   { id: 'festive', label: 'Festive Celebrations' },
   { id: 'silks', label: 'Heritage Silks' },

@@ -80,7 +80,7 @@ export default function CatalogPage({ searchParams }: { searchParams: Search }) 
               garment === 'Jewelry' || garment === 'Kamarbandh' ? 'bg-[#f43f5e] text-white shadow-md' : 'border border-rose-200 bg-white text-[#831843] hover:border-[#f43f5e]'
             }`}
           >
-            ✨ Traditional Jewelry ({products.filter((p) => p.garment === 'Jewelry' || p.garment === 'Kamarbandh').length})
+            Traditional Jewelry ({products.filter((p) => p.garment === 'Jewelry' || p.garment === 'Kamarbandh').length})
           </Link>
         </div>
       </header>

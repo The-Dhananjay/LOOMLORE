@@ -26,10 +26,10 @@ export function StateProductsGrid({ stateName, products }: { stateName: string; 
       {/* 3 State Option Tabs */}
       <div className="flex flex-wrap gap-3">
         {[
-          { id: 'all', label: `✨ All ${stateName} Items (${products.length})` },
-          { id: 'garments', label: `👗 1. Textiles & Clothes (${garmentsList.length})` },
-          { id: 'jewelry', label: `💎 2. Traditional Jewelry (${jewelryList.length})` },
-          { id: 'combos', label: `👑 3. Royal Heritage Combos (${combosList.length})` }
+          { id: 'all', label: `All ${stateName} Items (${products.length})` },
+          { id: 'garments', label: `1. Textiles & Clothes (${garmentsList.length})` },
+          { id: 'jewelry', label: `2. Traditional Jewelry (${jewelryList.length})` },
+          { id: 'combos', label: `3. Royal Heritage Combos (${combosList.length})` }
         ].map((tab) => (
           <button
             key={tab.id}
